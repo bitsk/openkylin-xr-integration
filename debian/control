@@ -1,0 +1,51 @@
+Source: openkylin-xr-integration
+Section: misc
+Priority: optional
+Maintainer: openKylin XR SIG <xr@lists.openkylin.top>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Vcs-Git: https://gitee.com/bigbits/openkylin-xr-integration.git
+Vcs-Browser: https://gitee.com/bigbits/openkylin-xr-integration
+
+Package: openkylin-xr-defaults
+Architecture: all
+Depends: ${misc:Depends}
+Description: XR distribution integration and model definitions
+ Independently maintained XR component for openKylin integration.
+
+Package: xr-device-a081
+Architecture: all
+Depends: ${misc:Depends}, openkylin-xr-defaults, firmware-xr-a081
+Description: A081 board audio sensors and thermal integration
+ Independently maintained XR component for openKylin integration.
+
+Package: xr-device-a081-vr
+Architecture: arm64
+Depends: ${misc:Depends}, xr-device-a081, firmware-xr-a081-tracking, xr-vendor-a081-controller, xr-vendor-a081-dsp-host
+Description: A081 tracking resources and VR backend selection
+ Independently maintained XR component for openKylin integration.
+
+Package: openkylin-xr-base
+Architecture: all
+Depends: ${misc:Depends}, libopenxr-loader1, pipewire, wireplumber
+Description: XR common runtime integration
+ Independently maintained XR component for openKylin integration.
+
+Package: openkylin-xr-streaming
+Architecture: all
+Depends: ${misc:Depends}, openkylin-xr-base, wivrn, wayvr, openkylin-xr-panel
+Description: XR streaming desktop package selection
+ Independently maintained XR component for openKylin integration.
+
+Package: openkylin-xr-debug
+Architecture: all
+Depends: ${misc:Depends}, openkylin-xr-base, xr-debug-server, xr-debug-web
+Description: XR debugging package selection
+ Independently maintained XR component for openKylin integration.
+
+Package: openkylin-xr-steamvr
+Architecture: arm64
+Depends: ${misc:Depends}, openkylin-xr-base, xr-monado-steamvr-driver, xr-head-tracking, xr-controller-worker-bionic, xr-session-manager
+Description: XR SteamVR candidate component selection
+ Installs independently maintained components without activating a session.

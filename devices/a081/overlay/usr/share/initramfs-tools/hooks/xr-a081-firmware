@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+case "${1:-}" in prereqs) exit 0;; esac
+: "${DESTDIR:?initramfs-tools destination is required}"
+if [ -d /usr/lib/firmware/xr/a081 ]; then
+ mkdir -p "$DESTDIR/usr/lib/firmware/xr/a081"
+ cp -a /usr/lib/firmware/xr/a081/. "$DESTDIR/usr/lib/firmware/xr/a081/"
+fi

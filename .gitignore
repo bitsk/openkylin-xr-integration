@@ -1,0 +1,16 @@
+/obj-*/
+/debian/.debhelper/
+/debian/debhelper-build-stamp
+/debian/files
+/debian/*.debhelper
+/debian/*.substvars
+/debian/*/
+!/debian/source/
+!/debian/source/**
+/target/
+/build/
+*.deb
+*.buildinfo
+*.changes
+
+!/debian/source/format
