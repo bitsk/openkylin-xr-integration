@@ -159,7 +159,7 @@ def main():
         parser.error('Profile changes require root')
     if 'A081' not in Path('/proc/device-tree/model').read_text():
         parser.error('Expected A081 hardware')
-    if read(Path('/etc/a081-rootfs-id')) not in ('a081-steamos-arm64', 'a081-debian-trixie-arm64'):
+    if read(Path('/etc/a081-rootfs-id')) not in ('a081-steamos-arm64', 'a081-debian-trixie-arm64', 'a081-openkylin-3.0-arm64'):
         parser.error('Expected installed A081 rootfs')
     name = (read(SELECTED) if SELECTED.exists() else 'factory') if args.profile == 'boot' else args.profile
     if name not in PROFILES:
