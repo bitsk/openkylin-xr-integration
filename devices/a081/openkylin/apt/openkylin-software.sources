@@ -1,0 +1,6 @@
+Types: deb
+URIs: https://software.openkylin.top/openkylin/
+Suites: huanghe
+Components: main all
+Architectures: arm64
+Signed-By: /usr/share/keyrings/openkylin-archive-keyring.gpg

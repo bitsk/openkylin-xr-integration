@@ -1,0 +1,1 @@
+deb [arch=arm64 signed-by=/usr/share/keyrings/openkylin-archive-anything-keyring.gpg] https://ppa.build.openkylin.top/kylinsoft/anything3.0/openkylin/ huanghe main

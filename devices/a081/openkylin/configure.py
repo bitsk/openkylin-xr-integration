@@ -22,6 +22,7 @@ if not (s/'etc/a081-rootfs-id').is_file():p.error('Source is not a board baselin
 model=Path('/proc/device-tree/model').read_text().rstrip('\0')
 if 'A081' not in model:p.error('Expected MIX A081')
 if not (s/'usr/lib/modules'/a.kernel_release).is_dir():p.error('Matching baseline modules required')
+if not (r/'usr/share/keyrings/openkylin-archive-anything-keyring.gpg').is_file():p.error('Install openkylin-archive-anything in the base root first')
 
 def write(name,text,mode=0o644):
  q=r/name;q.parent.mkdir(parents=True,exist_ok=True)
@@ -48,7 +49,10 @@ write('etc/fstab','# Root and /osstore are mounted by the board initramfs.\n')
 for q in (r/'etc/apt/sources.list.d').glob('*'):
  if q.suffix in ('.list','.sources'):
   q.rename(q.with_name(q.name+'.disabled'))
-write('etc/apt/sources.list','deb [signed-by=/usr/share/keyrings/openkylin-archive-keyring.gpg] https://archive.openkylin.top/openkylin huanghe main cross pty\n')
+apt=Path(__file__).resolve().parent/'apt'
+write('etc/apt/sources.list',(apt/'sources.list').read_text())
+for q in sorted(apt.iterdir()):
+ if q.name!='sources.list':write('etc/apt/sources.list.d/'+q.name,q.read_text())
 write('etc/resolv.conf','nameserver 1.1.1.1\nnameserver 9.9.9.9\n')
 write('etc/NetworkManager/conf.d/10-a081-dns.conf','[main]\ndns=systemd-resolved\nrc-manager=symlink\n')
 write('etc/timezone','Asia/Hong_Kong\n');link('etc/localtime','/usr/share/zoneinfo/Asia/Hong_Kong')

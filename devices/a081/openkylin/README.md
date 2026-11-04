@@ -8,4 +8,6 @@
 
 配置导入的 host key、authorized keys、Wi-Fi 文件和本机 UUID 只保存在本机安装中，不能打入公开分发的 overlay 或镜像。
 
+`apt/` 保存 ARM64 的 `huanghe` 基础、updates/security、software 与 Anything 3.0 源，配置时替换镜像遗留的工厂代理和 Anything 2.0/nile 条目。基础镜像需已安装 `openkylin-archive-anything`，Anything 使用该包提供的独立 keyring 验证签名。仅启用主仓库会遗漏 `htop`、`btop` 和 `fastfetch` 需要的 `libyyjson0`。proposed/backports 保持按具体适配需要单独选择，源配置不自动执行系统升级。
+
 `enable-desktop.py` 在原生 openKylin 中启用 mix 用户的 UKUI Wayland 自登录，并设置 graphical.target；脚本不立即重启显示服务或改启动分区。独占窗口中重启 LightDM 或完整重启后检查 kylin-wlcom、原生 EGL/GLX、DPU 扫描缓冲与退出。默认使用发行版 Mesa；X11 试验出现 DRI3 分配错误，不作为通过路径。
