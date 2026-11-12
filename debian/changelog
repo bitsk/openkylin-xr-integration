@@ -1,3 +1,9 @@
+openkylin-xr-integration (0.1.5) unstable; urgency=medium
+
+  * Select compatible hybrid input, passthrough controls and camera producer packages.
+
+ -- bits <bigbits@hackx.cc>  Thu, 12 Nov 2026 17:39:48 +0800
+
 openkylin-xr-integration (0.1.4) unstable; urgency=medium
 
   * Select the standard hand skeleton and model display integration.
