@@ -1,3 +1,9 @@
+openkylin-xr-integration (0.1.3) unstable; urgency=medium
+
+  * Add explicit optional hand input package selection.
+
+ -- bits <bigbits@hackx.cc>  Thu, 12 Nov 2026 10:43:15 +0800
+
 openkylin-xr-integration (0.1.2) unstable; urgency=medium
 
   * Configure the signed Huanghe Anything, software and update repositories.
