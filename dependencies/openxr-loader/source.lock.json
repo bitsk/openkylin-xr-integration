@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "package": "libopenxr-loader1",
+  "version": "1.1.47~ds-2",
+  "architecture": "arm64",
+  "filename": "libopenxr-loader1_1.1.47~ds-2_arm64.deb",
+  "bytes": 179472,
+  "sha256": "78bcd558a25d77193fc931a6205e72f8eddaa436e80b305ae0e53549ad127ab5",
+  "url": "https://deb.debian.org/debian/pool/main/o/openxr-sdk-source/libopenxr-loader1_1.1.47~ds-2_arm64.deb",
+  "source_package": "openxr-sdk-source",
+  "source_version": "1.1.47~ds-2",
+  "source_url": "https://sources.debian.org/src/openxr-sdk-source/1.1.47~ds-2/",
+  "upstream": "https://github.com/KhronosGroup/OpenXR-SDK-Source",
+  "activation_performed": false
+}

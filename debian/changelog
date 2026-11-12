@@ -1,3 +1,9 @@
+openkylin-xr-integration (0.1.8) unstable; urgency=medium
+
+  * Close native desktop dependencies and pin the upstream loader import.
+
+ -- bits <bigbits@hackx.cc>  Thu, 12 Nov 2026 20:48:35 +0800
+
 openkylin-xr-integration (0.1.7) unstable; urgency=medium
 
   * Include the private Mesa implementation in the native desktop closure.
