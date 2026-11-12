@@ -1,3 +1,9 @@
+openkylin-xr-integration (0.1.7) unstable; urgency=medium
+
+  * Include the private Mesa implementation in the native desktop closure.
+
+ -- bits <bigbits@hackx.cc>  Thu, 12 Nov 2026 20:14:46 +0800
+
 openkylin-xr-integration (0.1.6) unstable; urgency=medium
 
   * Close native desktop dependencies and preserve validated system integration.

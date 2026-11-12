@@ -61,7 +61,7 @@ Description: Optional XR optical hand input package selection
 
 Package: openkylin-xr-native
 Architecture: arm64
-Depends: ${misc:Depends}, openkylin-xr-base, xr-device-a081-vr, xr-shell-session (>= 0.1.26), xr-shell, xr-window-server, xr-dock, xr-system-ui, xr-head-tracking, xr-controller-worker-bionic, xr-device-tools, xr-session-manager, xr-monado-steamvr-driver, xr-native-interop, xr-hexagonrpc-daemon
+Depends: ${misc:Depends}, openkylin-xr-base, xr-device-a081-vr, xr-shell-session (>= 0.1.26), xr-shell, xr-window-server, xr-dock, xr-system-ui, xr-head-tracking, xr-controller-worker-bionic, xr-device-tools, xr-session-manager, xr-monado-steamvr-driver, xr-native-interop, xr-mesa-vulkan-drivers, xr-hexagonrpc-daemon
 Recommends: xr-environment-qingkong, xr-spatial-style-ukui, xwayland, fcitx5
 Description: Native openKylin XR desktop component closure
  Selects the independently packaged native desktop, tracking consumers and
