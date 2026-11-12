@@ -26,7 +26,7 @@ def main():
     if os.geteuid() != 0 or not root.is_relative_to('/osstore/systems') or not backup.is_relative_to('/osstore/updates'):
         parser.error('Expected root and existing osstore installation/backup paths')
     marker = (root / 'etc/a081-rootfs-id').read_text().strip()
-    if marker not in ('a081-steamos-arm64', 'a081-debian-trixie-arm64'):
+    if marker not in ('a081-steamos-arm64', 'a081-debian-trixie-arm64', 'a081-openkylin-3.0-arm64'):
         parser.error('Unexpected rootfs identity')
     if args.restore:
         manifest = json.loads((backup / 'files.json').read_text())

@@ -14,8 +14,8 @@ StandardInput=tty
 StandardOutput=tty
 StandardError=tty
 TTYPath=/dev/ttyGS0
-TTYReset=yes
-TTYVHangup=yes
+TTYReset=no
+TTYVHangup=no
 Environment=TERM=dumb
 Environment="PS1=A081-Debian# "
 

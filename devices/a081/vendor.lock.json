@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "repository": "bigbits/xr-vendor-assets",
+  "repository": "bitsk/qiyu-vendor",
   "visibility": "public",
   "tag": "a081-vendor-r1",
   "model": "a081",
@@ -482,13 +482,13 @@
           "install_path": "usr/lib/firmware/xr/a081/regulatory.db.p7s"
         }
       ],
-      "asset_id": 3578495,
-      "download_url": "https://gitee.com/api/v5/repos/bigbits/xr-vendor-assets/releases/1268823/attach_files/3578495/download"
+      "asset_id": 702240301,
+      "download_url": "https://github.com/bitsk/qiyu-vendor/releases/download/a081-vendor-r1/a081-firmware-a081-vendor-r1.tar.gz"
     },
     "qvr": {
       "asset": "a081-qvr-a081-vendor-r1.tar.gz",
-      "sha256": "b77e34e326fc1a2626b17cd16f5e217274f7b47b4fe7fd17c3e619b3a0fe92fb",
-      "bytes": 14302847,
+      "sha256": "f6ec7af1af80146c0c19ba87ff3f2aa96be685b1b250a5cebb0e3072bd8cd185",
+      "bytes": 14302876,
       "files": [
         {
           "path": "runtime/qcom/dsp/cdsp/fastrpc_shell_3",
@@ -582,13 +582,13 @@
           "install_path": "usr/share/xr/a081/tracking/config6.xml"
         }
       ],
-      "asset_id": 3578496,
-      "download_url": "https://gitee.com/api/v5/repos/bigbits/xr-vendor-assets/releases/1268823/attach_files/3578496/download"
+      "asset_id": 702240341,
+      "download_url": "https://github.com/bitsk/qiyu-vendor/releases/download/a081-vendor-r1/a081-qvr-a081-vendor-r1.tar.gz"
     },
     "controller": {
       "asset": "a081-controller-a081-vendor-r1.tar.gz",
-      "sha256": "756026a7641fcdcdd0629651a187b8f6f75bdb0ec1acdaabc5bfa8b022b6d0c4",
-      "bytes": 40594396,
+      "sha256": "641c32cc36fa0ebaa80e70ccbf96c9f6958f1e6a39a083f3708584a0b7511dd3",
+      "bytes": 40594836,
       "files": [
         {
           "path": "root/system/lib/android.frameworks.bufferhub@1.0.so",
@@ -1739,13 +1739,13 @@
           "install_path": "usr/lib/aarch64-linux-gnu/xr/vendor/a081/controller-root/system/etc/controller/data/visinit/visinit_config.xml"
         }
       ],
-      "asset_id": 3578498,
-      "download_url": "https://gitee.com/api/v5/repos/bigbits/xr-vendor-assets/releases/1268823/attach_files/3578498/download"
+      "asset_id": 702240344,
+      "download_url": "https://github.com/bitsk/qiyu-vendor/releases/download/a081-vendor-r1/a081-controller-a081-vendor-r1.tar.gz"
     },
     "controller-dsp": {
       "asset": "a081-controller-dsp-a081-vendor-r1.tar.gz",
-      "sha256": "6a18121bbd88151b89407140355d701b07c64676ce05df0785d7695c77a90885",
-      "bytes": 14521,
+      "sha256": "7ca45671962a1abd98aa1ebc1d5622a5c963a6a670870656bcc556dd3c2b59c3",
+      "bytes": 14499,
       "files": [
         {
           "path": "root/system/lib/libsnpe_dsp_domains_v2.so",
@@ -1769,10 +1769,14 @@
           "install_path": "usr/lib/aarch64-linux-gnu/xr/vendor/a081/controller-root/system/lib/libsnpe_dsp_domains_v3.so"
         }
       ],
-      "asset_id": 3578499,
-      "download_url": "https://gitee.com/api/v5/repos/bigbits/xr-vendor-assets/releases/1268823/attach_files/3578499/download"
+      "asset_id": 702240327,
+      "download_url": "https://github.com/bitsk/qiyu-vendor/releases/download/a081-vendor-r1/a081-controller-dsp-a081-vendor-r1.tar.gz"
     }
   },
-  "platform": "gitee",
-  "release_id": 1268823
+  "platform": "github",
+  "release_id": 1268823,
+  "compatible_cache_repositories": [
+    "bigbits/xr-vendor-assets",
+    "bitsk/qiyu-vendor"
+  ]
 }

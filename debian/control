@@ -5,8 +5,8 @@ Maintainer: openKylin XR SIG <xr@lists.openkylin.top>
 Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Vcs-Git: https://gitee.com/bigbits/openkylin-xr-integration.git
-Vcs-Browser: https://gitee.com/bigbits/openkylin-xr-integration
+Vcs-Git: https://github.com/bitsk/openkylin-xr-integration.git
+Vcs-Browser: https://github.com/bitsk/openkylin-xr-integration
 
 Package: openkylin-xr-defaults
 Architecture: all
@@ -58,3 +58,12 @@ Description: Optional XR optical hand input package selection
  Installs the hand input service and compatible session/runtime interfaces.
  Activation is explicit. Proprietary backend assets and private calibration
  are supplied separately, and installation never starts a camera session.
+
+Package: openkylin-xr-native
+Architecture: arm64
+Depends: ${misc:Depends}, openkylin-xr-base, xr-device-a081-vr, xr-shell-session (>= 0.1.26), xr-shell, xr-window-server, xr-dock, xr-system-ui, xr-head-tracking, xr-controller-worker-bionic, xr-device-tools, xr-session-manager, xr-monado-steamvr-driver, xr-hexagonrpc-daemon
+Recommends: xr-environment-qingkong, xr-spatial-style-ukui, xwayland, fcitx5
+Description: Native openKylin XR desktop component closure
+ Selects the independently packaged native desktop, tracking consumers and
+ sole device producer. Private calibration and upstream SteamVR resources
+ are imported explicitly. Package installation does not activate XR.

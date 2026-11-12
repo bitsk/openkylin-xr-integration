@@ -9,7 +9,7 @@
     "steamos"
   ],
   "overlay": "overlay",
-  "kernel_repo": "https://gitee.com/bigbits/xr-kernel",
+  "kernel_repo": "https://github.com/bitsk/xr-kernel",
   "automatic_device_install": false,
   "kernel_command_line": [
     "firmware_class.path=/usr/lib/firmware/xr/a081"

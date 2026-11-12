@@ -1,0 +1,13 @@
+--- a/control.py
++++ b/control.py
+@@ -204,7 +204,9 @@
+ mv "$mnt/boot/next-system.{self.token}" "$mnt/boot/next-system"
+ """
+         else:
+-            command += 'rm -f "$mnt/boot/next-system"\n'
++            command += f"""printf 'debian\\n' > "$mnt/boot/next-system.{self.token}"
++mv "$mnt/boot/next-system.{self.token}" "$mnt/boot/next-system"
++"""
+         command += f'printf "%s\\n" {int(time.time())} > "$mnt/boot/clock-epoch"\nsync\nprintf "A081_SELECTOR_READY={selected}\\n"\n'
+         output = self.root(command)
+         if f"A081_SELECTOR_READY={selected}" not in output.splitlines():
