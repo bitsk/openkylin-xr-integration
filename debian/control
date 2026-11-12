@@ -52,7 +52,7 @@ Description: XR SteamVR candidate component selection
 
 Package: openkylin-xr-hands
 Architecture: arm64
-Depends: ${misc:Depends}, openkylin-xr-base, xr-hand-tracking, xr-head-tracking (>= 0.1.1), xr-monado-steamvr-driver (>= 25.0.0+xr2), xr-session-manager (>= 0.1.2), xr-shell (>= 0.2.28)
+Depends: ${misc:Depends}, openkylin-xr-base, xr-hand-tracking (>= 0.1.1), xr-head-tracking (>= 0.1.1), xr-monado-steamvr-driver (>= 25.0.0+xr3), xr-session-manager (>= 0.1.2), xr-shell (>= 0.2.29)
 Suggests: xr-hand-backend-quest-dsp
 Description: Optional XR optical hand input package selection
  Installs the hand input service and compatible session/runtime interfaces.

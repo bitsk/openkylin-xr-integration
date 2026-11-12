@@ -1,3 +1,9 @@
+openkylin-xr-integration (0.1.4) unstable; urgency=medium
+
+  * Select the standard hand skeleton and model display integration.
+
+ -- bits <bigbits@hackx.cc>  Thu, 12 Nov 2026 13:39:41 +0800
+
 openkylin-xr-integration (0.1.3) unstable; urgency=medium
 
   * Add explicit optional hand input package selection.
