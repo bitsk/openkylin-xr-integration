@@ -1,0 +1,33 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Explicit graphics bring-up. This does not provide physical tracking.
+set -euo pipefail
+if [[ ${1:-} != --ack-simulated ]]; then
+ echo 'Usage: vr700-hyperspace-simulated --ack-simulated [--seconds N] [--capture-dir DIR]' >&2
+ echo 'Synthetic poses only; no headset/controller/hand tracking acceptance.' >&2
+ exit 2
+fi
+shift
+seconds=60
+capture_dir=${XDG_STATE_HOME:-$HOME/.local/state}/xr-vr700-simulated/captures
+while (($#)); do
+ case "$1" in
+  --seconds) seconds=${2:?Missing duration}; shift 2 ;;
+  --capture-dir) capture_dir=${2:?Missing capture directory}; shift 2 ;;
+  *) echo "Unknown argument: $1" >&2; exit 2 ;;
+ esac
+done
+[[ $seconds =~ ^[0-9]+$ ]] || exit 2
+[[ $(id -u) != 0 ]] || { echo 'Run as the logged-in desktop user.' >&2; exit 2; }
+grep -qx vr700-openkylin-3.0-arm64 /etc/xr-rootfs-id
+tr '\0' '\n' </proc/device-tree/compatible | grep -qx iqiyi,vr700
+prefix=/opt/xr/vr700-simulated
+[[ -n ${WAYLAND_DISPLAY:-} ]] || { echo 'Use the installed Wayland desktop session environment.' >&2; exit 2; }
+unset XR_ENABLE_API_LAYERS XR_API_LAYER_PATH XR_RUNTIME_JSON
+export XR_DESKTOP_PREFIX=/usr
+export XR_SYSTEM_CONTROLS_PROVIDER=none
+printf '%s\n' 'VR700 HyperSpace: simulated input; desktop Wayland presentation; no physical tracking or optical acceptance.'
+exec "$prefix/tools/native/run-desktop.sh" --native-development --simulated-input \
+ --runtime-prefix "$prefix" --renderer freedreno --presentation wayland \
+ --icd /usr/lib/aarch64-linux-gnu/xr-mesa/icd.d/freedreno_icd.aarch64.json \
+ --scale 100 --no-audio --no-ime --seconds "$seconds" --capture-dir "$capture_dir"
