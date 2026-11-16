@@ -29,6 +29,8 @@ def main():
                  'libdsp_streamer_qvrcam_receiver.so',
                  'libsnpe_dsp_v66_domains_v2_skel.so', 'libcalculator_skel.so'),
     }.items() for name in names]
+    sources += [(args.stock / 'vendor/lib/rfsa/adsp' / name, 'cdsp')
+                for name in ('libcvpdsp_skel.so', 'libfastcvadsp.so', 'libdspCV_skel.so')]
     if not any(p.name == 'fastrpc_shell_2' and domain == 'sdsp' for p, domain in sources):
         parser.error('Original SLPI shell is missing')
     checked = []

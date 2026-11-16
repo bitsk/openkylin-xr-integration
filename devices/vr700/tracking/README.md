@@ -123,3 +123,13 @@ does not provide X11 WSI. The generated `/etc/xr/vr700-desktop-icd.json`
 selects the distribution driver by absolute library path, preventing the
 private `xr-mesa` library directory from overriding its identical SONAME.
 The two profile ICD paths must remain distinct.
+
+`finish-installed-capsule.sh` copies only the installed package helpers into
+the selected VR700 capsule, including `pose-watch` from the Monado driver
+package. The diagnostics package alone does not provide this binary. The
+formal ready path additionally consumes upstream `vrserver`, `vrcmd`, and
+`libopenvr_api.so` from the complete selected SteamVR runtime.
+
+The CDSP import also requires the original vendor RFSA CVP, FastCV, and DSP-CV
+libraries. `libfastcvadsp.so` itself needs `libdspCV_skel.so`; collecting only
+the system RFSA directory leaves this recursive dependency unresolved.
