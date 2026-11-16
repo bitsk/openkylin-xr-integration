@@ -35,6 +35,24 @@ def start_processor(name, entry):
         time.sleep(2)
 
 
+def wait_sdsp_node(entry):
+    deadline = time.monotonic() + 10
+    node = Path('/dev/fastrpc-sdsp')
+    print('Waiting for SLPI FastRPC character device', flush=True)
+    while True:
+        state = (entry / 'state').read_text().strip()
+        if state != 'running':
+            raise RuntimeError('SLPI stopped while waiting for FastRPC device: ' + state)
+        if node.is_char_device():
+            print('SLPI FastRPC character device ready', flush=True)
+            return
+        if time.monotonic() >= deadline:
+            raise RuntimeError('SLPI FastRPC character device not ready within 10s')
+        # The remoteproc running state can precede FastRPC device creation.
+        # Let After=vr700-slpi.service depend on the actual node, not a delay.
+        time.sleep(0.1)
+
+
 def processors_for_board():
     if os.geteuid() != 0:
         raise RuntimeError('root is required')
@@ -147,6 +165,8 @@ def main():
         print('SLPI and CDSP running; sensor/pose acceptance is separate', flush=True)
         return
     start_processor(phase, processors[phase])
+    if phase == 'slpi':
+        wait_sdsp_node(processors[phase])
     print(phase + ': running', flush=True)
 
 
