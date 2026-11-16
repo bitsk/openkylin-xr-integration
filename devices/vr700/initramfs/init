@@ -38,6 +38,9 @@ done
 [ "$serial" = "$expected_serial" ] || fail 'Bootloader serial mismatch'
 tr '\000' '\n' < /sys/firmware/devicetree/base/compatible |
     grep -Fxq 'iqiyi,vr700' || fail 'Expected VR700 board device tree'
+now=$(date +%s)
+seed=$(cat /build-epoch)
+[ "$now" -ge "$seed" ] || date -s "@$seed"
 
 # ACM supports early diagnosis. ECM is independent of unverified WLAN firmware.
 g=/sys/kernel/config/usb_gadget/vr700
@@ -128,9 +131,6 @@ esac
 [ -d /newroot/usr/lib/modules/"$(uname -r)" ] || fail 'Matching kernel modules missing'
 mkdir -p /newroot/run /newroot/dev /newroot/proc /newroot/sys /run/xr-store
 mount --move /store /run/xr-store || fail 'Move backing storage'
-now=$(date +%s)
-seed=$(cat /build-epoch)
-[ "$now" -ge "$seed" ] || date -s "@$seed"
 cat /proc/cmdline > /run/vr700-initramfs-cmdline
 printf '%s\n' "$storage_mode" > /run/vr700-root-storage
 printf 'VR700 identity, filesystem UUID and installation verified\n' > /run/vr700-handoff
