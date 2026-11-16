@@ -45,6 +45,10 @@ configuration. Required keys are `expected_serial`, `storage_mode`, `storage_uui
 `usb_device_mac`, `usb_host_mac`, `usb_address` and `usb_netmask`.
 `storage_uuid` is omitted for maintenance. Additional tools/libraries can be
 included with explicit `--extra-tree` roots; each file digest is recorded.
+An optional `usb_peer_address` serves one DHCP lease on the USB interface,
+without advertising a default route or DNS. This keeps host network managers
+from disconnecting a link that otherwise has no DHCP server. The BusyBox input
+must include `udhcpd` when this option is selected.
 
 - `storage_mode=maintenance` opens only USB ACM/ECM and a persistent maintenance
   shell. It mounts no storage and has no automatic reboot timer.
