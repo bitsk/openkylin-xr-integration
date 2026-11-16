@@ -70,9 +70,9 @@ QIYU_VR_SESSION_PROFILE=/etc/xr/vr700-session.json xr-session stop
 
 Session helpers validate the VR700 DT compatible, installed root marker, selected
 kernel, graphics account, and private tracker XML before hardware mutation.
-Free-running mode never requests GPIO15/144 and never performs Nordic SPI reset.
+The default sensor-master mode uses slot 2, never requests GPIO15/144, and never performs Nordic SPI reset.
 It keeps real QCFT timestamps and the producer's unchanged frame matching rules;
-streaming four cameras does not itself establish valid paired 6DoF tracking.
+The observed 763 frames all passed QCFT pairing; this validates frame synchronization only, with 6DoF and wearer acceptance still pending.
 The UART owner handles radio lifetime. The camera owner remains unique; hands
 consume its shared stream. Physical poses, accepted controller/hand packets,
 scene startup, and later wearer/optical acceptance must be recorded separately.

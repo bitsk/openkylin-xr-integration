@@ -6,7 +6,7 @@
   "prefix": "/opt/xr/vr700/session",
   "camera_rig": {
     "camss": "ac6a000.camss",
-    "synchronization": "free-running",
+    "synchronization": "sensor-master",
     "rgb_passthrough": false,
     "slots": [
       {
@@ -45,7 +45,8 @@
         "horizontal_flip": 1,
         "vertical_flip": 1
       }
-    ]
+    ],
+    "master_slot": 2
   },
   "controller_transport": {
     "type": "uart",
