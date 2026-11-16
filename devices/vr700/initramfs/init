@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # PID 1: boot a verified VR700 installation without changing partition tables.
 export PATH=/bin
+export TERM=dumb
+export PS1='VR700-initramfs# '
 mount -t devtmpfs devtmpfs /dev || mount -t tmpfs -o mode=0755 tmpfs /dev
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
@@ -10,11 +12,18 @@ mount -t tmpfs -o mode=0755 tmpfs /run
 mkdir -p /sys/kernel/config
 mount -t configfs configfs /sys/kernel/config
 
+console_shell() {
+    # USB maintenance clients send complete lines; kernel echo and XON/XOFF
+    # interfere with long commands and binary-safe transfer wrappers.
+    /bin/busybox stty -F /dev/ttyGS0 -echo -onlcr -ixon
+    setsid sh -c 'exec sh -i </dev/ttyGS0 >/dev/ttyGS0 2>&1'
+}
+
 fail() {
     echo "VR700 initramfs: $*" > /dev/kmsg
     (sleep 120; sync; reboot -f) &
     while :; do
-        setsid sh -c 'exec sh -i </dev/ttyGS0 >/dev/ttyGS0 2>&1'
+        console_shell
         sleep 1
     done
 }
@@ -63,7 +72,7 @@ if [ "$storage_mode" = maintenance ]; then
     # separately authorized filesystem operation performed by the operator.
     echo 'VR700 maintenance console ready; no storage mounted' > /dev/kmsg
     while :; do
-        setsid sh -c 'exec sh -i </dev/ttyGS0 >/dev/ttyGS0 2>&1'
+        console_shell
         sleep 1
     done
 fi
