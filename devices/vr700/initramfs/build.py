@@ -59,7 +59,14 @@ def main():
             p.error('USB MACs must be locally administered unicast addresses')
     if cfg['usb_device_mac'] == cfg['usb_host_mac']:
         p.error('USB endpoint MACs must differ')
-    ipaddress.IPv4Interface(cfg['usb_address'] + '/' + cfg['usb_netmask'])
+    interface = ipaddress.IPv4Interface(cfg['usb_address'] + '/' + cfg['usb_netmask'])
+    cfg.setdefault('usb_peer_address', '')
+    if cfg['usb_peer_address']:
+        peer = ipaddress.IPv4Address(cfg['usb_peer_address'])
+        if (peer not in interface.network or peer == interface.ip
+                or peer in (interface.network.network_address, interface.network.broadcast_address)):
+            p.error('USB peer must be a different usable address in the USB subnet')
+    required.add('usb_peer_address')
     out = a.output.resolve()
     out.mkdir(parents=True, mode=0o700)
     for src, name in ((a.busybox, 'busybox'), (Path(__file__).with_name('init'), 'init')):

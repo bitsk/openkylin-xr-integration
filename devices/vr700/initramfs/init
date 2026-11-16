@@ -66,6 +66,13 @@ done
 [ -n "$(cat UDC)" ] || fail 'USB controller unavailable'
 ifconfig usb0 "$usb_address" netmask "$usb_netmask" up || fail 'USB network'
 cd /
+if [ -n "${usb_peer_address:-}" ]; then
+    # A single peer lease keeps host NetworkManager from dropping an otherwise
+    # DHCP-less USB link. Do not advertise a default route or DNS server.
+    printf 'start %s\nend %s\ninterface usb0\nmax_leases 1\nlease_file /run/vr700-usb.leases\npidfile /run/vr700-usb-dhcp.pid\noption subnet %s\noption lease 3600\n' \
+        "$usb_peer_address" "$usb_peer_address" "$usb_netmask" > /run/vr700-usb-dhcp.conf
+    /bin/busybox udhcpd /run/vr700-usb-dhcp.conf || fail 'USB peer DHCP'
+fi
 
 if [ "$storage_mode" = maintenance ]; then
     # No storage mount and no timed reboot: maintenance may contain a long,
