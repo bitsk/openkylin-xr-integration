@@ -152,13 +152,26 @@ vendor configuration files using their private capture-manifest hashes. Other
 SoC files and head calibration remain separate private inputs; no missing
 values or calibration aliases are generated.
 
-The original persistent `registry/sns_reg_config` records each vendor JSON's
-mtime. After verifying that cache and every config file against the private
-capture manifest, the importer requires exact cache coverage and restores each
-config's recorded mtime. Both runtime copies retain unchanged file bytes and
-record the mtime and its source in the private build receipt. Extraction time
-is not a valid replacement: FastRPC exposes physical mtimes, so changing them
-can trigger registry rebuild attempts that the read-only server rejects.
-Do not normalize these configuration mtimes with archive `--mtime` or
-`SOURCE_DATE_EPOCH`; preserve them through deployment. Registry writes remain
-forbidden, and successful cold startup still requires actual device validation.
+The default sensor mode is `read-only-cached`. Both runtimes import the complete
+original persistent registry unchanged and expose an empty `sensors/config` to
+FastRPC. Vendor JSON files remain in `sensors/config.vendor-original`, with
+original mtimes read from the verified `registry/sns_reg_config` cache. Their
+bytes, timestamps and cache source remain recorded in the private receipt.
+
+Restoring mtimes alone did not prevent this firmware from requesting
+`temp.json` writes and failing registry initialization. With the complete
+original registry and an empty exposed config directory, the observed VR700
+SLPI startup registered proximity, accelerometer and gyroscope through the
+single resident listener. This establishes the cached registry startup path,
+not full tracking acceptance. DSP writes remain forbidden.
+
+For an existing installation, stop the session and resident listener under the
+hardware owner's control, then run `migrate-cached-registry.py --runtime ROOT
+--receipt IMPORT_RECEIPT` for each runtime. It verifies every original registry
+and vendor config hash before moving the config directory; it refuses ambiguous
+or changed contents, never replaces a populated archive, and writes the runtime
+mode metadata. The original vendor files can be restored by removing only the
+empty config directory and renaming the archive back while the listener is
+stopped. Do not overlay directory entries from a tar archive to perform this
+migration. Library/metadata update archives contain only file members under the
+physical `usr/share` and `var/opt` paths.

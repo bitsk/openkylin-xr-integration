@@ -31,8 +31,9 @@ def validate_runtime(stock, manifest_path):
         if len(data) != entry['bytes'] or hashlib.sha256(data).hexdigest() != entry['sha256']:
             raise ValueError('VR700 runtime input digest mismatch: ' + entry['source'])
         checked.append((entry, data))
-    # The DSP caches configuration mtimes in the original persistent registry.
-    # Host extraction times would falsely request registry regeneration/writes.
+    # Preserve original vendor inputs for audit, but expose only the complete
+    # persistent cache: this signed firmware still requests writes when vendor
+    # JSON is visible, even after restoring its cached mtimes.
     registry = 'mnt/vendor/persist/sensors/registry/registry'
     config = 'vendor/etc/sensors/config'
     cache_path = registry + '/sns_reg_config'
@@ -57,11 +58,17 @@ def validate_runtime(stock, manifest_path):
         value = record.get('data')
         if record.get('type') != 'int' or not isinstance(value, str) or not value.isdecimal():
             raise ValueError('Original registry cache has an invalid config mtime: ' + path.name)
-        add(config + '/' + path.name, 'sensors/config/' + path.name, int(value))
+        add(config + '/' + path.name, 'sensors/config.vendor-original/' + path.name, int(value))
     for path in sorted((Path(stock) / registry).iterdir()):
         add(registry + '/' + path.name, 'sensors/registry/' + path.name)
     add('vendor/etc/sensors/sns_reg_config', 'sensors/sns_reg.conf')
     lock['private_sensor_files'] = private_entries
+    lock['sensor_runtime'] = dict(mode='read-only-cached',
+        registry_source=registry, cache_source=cache_path,
+        cache_sha256=capture[cache_path]['sha256'],
+        registry_file_count=len(list((Path(stock) / registry).iterdir())),
+        vendor_config_count=len(configs), vendor_archive='sensors/config.vendor-original',
+        exposed_config='sensors/config', exposed_config_empty=True, dsp_writes_allowed=False)
     return lock, checked
 
 
@@ -77,6 +84,10 @@ def write_runtime(output, lock, checked):
         target.chmod(0o644)
         if 'mtime' in entry:
             os.utime(target, ns=(entry['mtime'] * 1000000000,) * 2)
+    (output / 'sensors/config').mkdir()
+    metadata = output / 'sensors/runtime-mode.json'
+    metadata.write_text(json.dumps(lock['sensor_runtime'], indent=2) + '\n')
+    metadata.chmod(0o644)
     for alias, target in lock['aliases'].items():
         (output / alias).symlink_to(target, target_is_directory=True)
     for path in [output, *output.rglob('*')]:
@@ -84,4 +95,5 @@ def write_runtime(output, lock, checked):
             path.chmod(0o755)
     return dict(device=lock['device'], files=lock['files'] + lock['private_sensor_files'], aliases=lock['aliases'],
                 dsp_resident_dependencies=lock['dsp_resident_dependencies'],
-                hardware_validated=False, sensor_registry_contents_imported=True)
+                hardware_validated=False, sensor_registry_contents_imported=True,
+                sensor_runtime=lock['sensor_runtime'])

@@ -199,7 +199,7 @@ def main():
         calibration_sha256=digest, config6_sha256=config_digest, calibration_camera_count=4,
         original_hand_assets_checked=bool(args.hand_assets),
         runtime_files=runtime_lock['files'] + runtime_lock['private_sensor_files'], runtime_destinations=runtime_destinations,
-        sensor_registry_contents_imported=True,
+        sensor_registry_contents_imported=True, sensor_runtime=runtime_lock['sensor_runtime'],
         camera_synchronization=rig['synchronization'],
         shared_camera_owner='head producer; hand and controller consumers subscribe',
         controller_transport=transport, services_started=False,
