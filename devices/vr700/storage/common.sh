@@ -63,11 +63,14 @@ xr_unmounted() {
             [ ! -e "$xr_holder" ] || xr_die "Active block holder: $xr_holder"
         done
     done
-    while read -r xr_source xr_rest; do
-        case "$xr_source" in Filename|/dev/zram*) continue;; esac
-        xr_resolved=$(readlink -f "$xr_source" 2>/dev/null || true)
-        case "$xr_resolved" in /dev/sda*|/dev/block/sda*) xr_die 'UFS swap is active';; esac
-    done < /proc/swaps
+    # CONFIG_SWAP=n kernels legitimately omit this proc file.
+    if [ -r /proc/swaps ]; then
+        while read -r xr_source xr_rest; do
+            case "$xr_source" in Filename|/dev/zram*) continue;; esac
+            xr_resolved=$(readlink -f "$xr_source" 2>/dev/null || true)
+            case "$xr_resolved" in /dev/sda*|/dev/block/sda*) xr_die 'UFS swap is active';; esac
+        done < /proc/swaps
+    fi
     # Also inspect traditional mount sources, including /dev/block/by-name.
     while read -r xr_source xr_rest; do
         case "$xr_source" in /dev/*)
