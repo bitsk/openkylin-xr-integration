@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "destination": "/opt/xr/vr700/native-libs",
+  "libraries": {
+    "libavif.so.16": {
+      "sha256": "21c79d0c4704a72b03c5e27815ef17f44b3160ff853c37a8f91987eb8bfe1977",
+      "source": "usr/lib/libavif.so.16.0.4",
+      "source_archive_sha256": "fbee6c8ec2c3e388686d34a27511e2f9561499239f1452e1f64f9ad6fa67fe2f"
+    },
+    "libluajit-5.1.so.2": {
+      "sha256": "47cc80f3f085d2c08c1c155a42e865d24b985692525136cfdc845e9615da7389",
+      "source": "usr/lib/libluajit-5.1.so.2.1.1713773202",
+      "source_archive_sha256": "fbee6c8ec2c3e388686d34a27511e2f9561499239f1452e1f64f9ad6fa67fe2f"
+    },
+    "librav1e.so.0.7": {
+      "sha256": "422c60a985a1533b59a8fef9cc77751d8d7a088e98c35adad161ed7bfa263240",
+      "source": "usr/lib/librav1e.so.0.7.1",
+      "source_archive_sha256": "fbee6c8ec2c3e388686d34a27511e2f9561499239f1452e1f64f9ad6fa67fe2f"
+    },
+    "libyuv.so": {
+      "sha256": "43fd22f2de837ec7eafe156c084a14bbb52bd4bae81cf6e4094a7f4bb0a02bd9",
+      "source": "usr/lib/libyuv.so",
+      "source_archive_sha256": "fbee6c8ec2c3e388686d34a27511e2f9561499239f1452e1f64f9ad6fa67fe2f"
+    },
+    "libpixman-1.so.0": {
+      "sha256": "05e250b3e17be804bc4b237eb32d08b3ef7d38590bf035f8c433cdf6bf6996c1",
+      "source": "usr/lib/libpixman-1.so.0.46.4",
+      "source_archive_sha256": "fbee6c8ec2c3e388686d34a27511e2f9561499239f1452e1f64f9ad6fa67fe2f"
+    }
+  }
+}

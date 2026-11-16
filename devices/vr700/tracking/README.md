@@ -101,3 +101,8 @@ The same importer includes the CDSP RFSA QVR driver, camera/3DoF helpers, XR2
 8250 tracker, camera receiver, SNPE V66 and calculator libraries alongside the
 original vendor CDSP runtime. Vendor DSP directories alone are insufficient;
 RFSA inputs are checked against the same independent VR700 capture manifest.
+
+`prepare.py --native-libraries-root VERIFIED_EXTERNAL_SDK` imports the five
+pinned libraries in `native-libraries.json`, including pixman 0.46.4 required
+by the selected Gamescope. A dependency listing alone does not prove lazy
+symbol resolution; use a bind-now startup check with the target loader.

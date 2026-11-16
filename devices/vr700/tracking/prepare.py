@@ -36,6 +36,8 @@ def main():
     parser.add_argument('--hand-commit', required=True)
     parser.add_argument('--hand-assets', type=Path,
                         help='Optional existing original-weight assets.lock.json directory to validate')
+    parser.add_argument('--native-libraries-root', type=Path,
+                        help='Optional verified external SDK root for pinned native libraries')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
@@ -125,6 +127,14 @@ def main():
         environment={'XR_RUNTIME_JSON': profile['steamvr'] + '/steamxr_linuxarm64.json',
                      'DISABLE_GAMESCOPE_WSI': '1', 'DISABLE_VULKAN_FDM_INJECTION_LAYER': '1'})
     device_api.validate_device(profile)
+    native_libraries = {}
+    if args.native_libraries_root:
+        lock = json.loads(Path(__file__).with_name('native-libraries.json').read_text())
+        for name, entry in lock['libraries'].items():
+            library_bytes = (args.native_libraries_root / entry['source']).read_bytes()
+            if hashlib.sha256(library_bytes).hexdigest() != entry['sha256']:
+                parser.error('External native library digest mismatch: ' + name)
+            native_libraries[lock['destination'] + '/' + name] = library_bytes
     args.output.mkdir(parents=True)
     root = args.output / 'root'
     def write(path, contents, mode=0o644):
@@ -132,6 +142,8 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(contents)
         target.chmod(mode)
+    for path, library_bytes in native_libraries.items():
+        write(path, library_bytes)
     for name, obj in (('vr700-session', profile), ('vr700-controller', controller), ('hand-tracking', hand)):
         write('/etc/xr/' + name + '.json', (json.dumps(obj, indent=2) + '\n').encode())
     write(hand['calibration'], payload, 0o600)
