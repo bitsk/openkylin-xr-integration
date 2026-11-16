@@ -1,0 +1,14 @@
+[Unit]
+Description=VR700 SLPI sensor registry and runtime files
+After=local-fs.target
+ConditionPathExists=/dev/fastrpc-sdsp
+ConditionPathIsDirectory=/usr/share/qcom/sm8250/iqiyi/vr700
+
+[Service]
+ExecStartPre=/usr/sbin/modprobe qcom-see
+ExecStart=/usr/bin/xr-hexagonrpcd -f /dev/fastrpc-sdsp -s -R /usr/share/qcom/sm8250/iqiyi/vr700
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

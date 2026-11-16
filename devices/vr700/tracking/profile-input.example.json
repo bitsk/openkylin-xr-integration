@@ -1,0 +1,142 @@
+{
+  "device": "vr700",
+  "kernel_releases": [
+    "7.3.0-xr-vr700-tracking"
+  ],
+  "prefix": "/opt/xr/vr700/session",
+  "camera_rig": {
+    "camss": "ac6a000.camss",
+    "synchronization": "free-running",
+    "rgb_passthrough": false,
+    "slots": [
+      {
+        "id": 0,
+        "sensor": "ov7251",
+        "phy": 5,
+        "csid": 0,
+        "vfe": 0,
+        "horizontal_flip": 1,
+        "vertical_flip": 1
+      },
+      {
+        "id": 1,
+        "sensor": "ov7251",
+        "phy": 4,
+        "csid": 1,
+        "vfe": 1,
+        "horizontal_flip": 1,
+        "vertical_flip": 1
+      },
+      {
+        "id": 2,
+        "sensor": "ov7251",
+        "phy": 2,
+        "csid": 2,
+        "vfe": 2,
+        "horizontal_flip": 0,
+        "vertical_flip": 0
+      },
+      {
+        "id": 3,
+        "sensor": "ov7251",
+        "phy": 3,
+        "csid": 3,
+        "vfe": 3,
+        "horizontal_flip": 1,
+        "vertical_flip": 1
+      }
+    ]
+  },
+  "controller_transport": {
+    "type": "uart",
+    "device": "/dev/ttyHS1",
+    "baud": 921600,
+    "data_bits": 8,
+    "parity": "none",
+    "stop_bits": 1,
+    "flow_control": "rtscts"
+  },
+  "desktop_owner": {
+    "executable": "/usr/bin/kylin-wlcom",
+    "user_unit": "kylin-wlcom.service",
+    "argv": [
+      "kylin-wlcom",
+      "-s",
+      "ukui-session"
+    ],
+    "environment": {
+      "HOME": "/home/xr",
+      "XDG_RUNTIME_DIR": "/run/user/1000",
+      "XDG_SESSION_TYPE": "wayland"
+    }
+  },
+  "sdsp_listener": {
+    "unit": "vr700-sensors-files.service",
+    "root": "/usr/share/qcom/sm8250/iqiyi/vr700"
+  },
+  "steamvr": "/opt/steamvr",
+  "steamvr_settings": "/opt/xr/vr700/session/steamvr-settings.json",
+  "system_icd": "/usr/lib/aarch64-linux-gnu/xr-mesa/icd.d/freedreno_icd.aarch64.json",
+  "kms_icd": "/usr/lib/aarch64-linux-gnu/xr-mesa/icd.d/freedreno_icd.aarch64.json",
+  "runtime_library_paths": [
+    "/opt/xr/vr700/native-libs",
+    "/usr/lib/aarch64-linux-gnu/xr-mesa"
+  ],
+  "controller_models_directory": "/usr/share/xr/devices/vr700/controllers",
+  "controller_plan": {
+    "format": "xr-controller-session-plan-v1",
+    "transport": {
+      "type": "uart",
+      "device": "/dev/ttyHS1",
+      "baud": 921600,
+      "data_bits": 8,
+      "parity": "none",
+      "stop_bits": 1,
+      "flow_control": "rtscts"
+    },
+    "producer_argv": [
+      "/usr/lib/xr/session-manager/run-sdk-worker.sh",
+      "--root",
+      "/opt/xr/vr700/controller-root",
+      "--worker",
+      "/opt/xr/vr700/session/controller-sdk-pose",
+      "--input-socket",
+      "/run/xr-vr700-controller-input-live/input.sock",
+      "--output-fd",
+      "{packet_fd}",
+      "--seconds",
+      "0",
+      "--candidate-profile",
+      "sdk-world-to-portrait-v1",
+      "--cdsp-runtime",
+      "/opt/xr/vr700/session/tracking/stock-runtime/qcom",
+      "--snpe-runtime",
+      "dsp"
+    ],
+    "input_socket": "/run/xr-vr700-controller-input-live/input.sock",
+    "camera_env": {
+      "A081_CONTROLLER_INPUT_SOCKET": "/run/xr-vr700-controller-input-live/input.sock",
+      "A081_CONTROLLER_SHARED_CDSP": "1"
+    },
+    "radio_argv": [
+      "/usr/bin/xr-controller-uart",
+      "--device",
+      "/dev/ttyHS1",
+      "--baud",
+      "921600",
+      "--socket",
+      "/run/xr-vr700-controller-input-live/input.sock",
+      "--seconds",
+      "0",
+      "--camera-time"
+    ]
+  },
+  "hand_tracking": {
+    "assets": "/var/lib/xr-hand-tracking/vr700/quest",
+    "runtime_root": "/opt/xr/vr700/session/tracking/stock-runtime/qcom",
+    "threads": 2,
+    "detector_period": 1.0,
+    "vtcm_bytes": 16384
+  },
+  "installation_note": "Validate the actual mainline UART node before activation. This input does not assert live tracking or physical coordinate acceptance."
+}
