@@ -121,7 +121,7 @@ def main():
         head_tracking=dict(config=prefix + '/tracking/config6.xml',
             calibration=prefix + '/tracking/input-config/calibration.xml', cvp_mode='stock',
             config_sha256=config_digest, calibration_sha256=digest),
-        hand_tracking=dict(enabled=True, runtime_input=False, unit='xr-hand-tracking.service',
+        hand_tracking=dict(enabled=True, runtime_input=True, unit='xr-hand-tracking.service',
                            camera_socket=hand['camera_socket'], state_socket=hand['state_socket']),
         device=dict(id='vr700', compatible='iqiyi,vr700', rootfs_marker='/etc/xr-rootfs-id',
                     kernel_releases=resources['kernel_releases'],

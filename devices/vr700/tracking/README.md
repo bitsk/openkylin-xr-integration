@@ -25,7 +25,7 @@ python3 prepare.py --private-input private-resources.json \
 
 The generated root contains `/etc/xr/vr700-session.json`, its UART controller
 plan, `/etc/xr/hand-tracking.json`, private XML, and neutral runtime settings.
-Hand sampling is enabled, but `hand_tracking.runtime_input=false` keeps its socket out of the runtime until real VR700 grip/aim anchors are installed. Set that field to true only after the anchors are verified. There is no startup unit activation. Install staged files as root, retaining
+Hand sampling and runtime input are enabled. Deploy the runtime version that separates real hand input from physical-controller anchor availability before applying this profile. Missing VR700 controller anchors keep physical-controller candidates unavailable; hand input must not fabricate those transforms. There is no startup unit activation. Install staged files as root, retaining
 private XML permissions. Use the component builder with an updated exact source
 lock to install these project packages:
 
