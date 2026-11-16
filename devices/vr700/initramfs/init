@@ -1,0 +1,125 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# PID 1: boot a verified VR700 installation without changing partition tables.
+export PATH=/bin
+mount -t devtmpfs devtmpfs /dev || mount -t tmpfs -o mode=0755 tmpfs /dev
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mdev -s
+mount -t tmpfs -o mode=0755 tmpfs /run
+mkdir -p /sys/kernel/config
+mount -t configfs configfs /sys/kernel/config
+
+fail() {
+    echo "VR700 initramfs: $*" > /dev/kmsg
+    (sleep 120; sync; reboot -f) &
+    while :; do
+        setsid sh -c 'exec sh -i </dev/ttyGS0 >/dev/ttyGS0 2>&1'
+        sleep 1
+    done
+}
+
+# Generated locally by build.py. Identity and network addresses are private inputs.
+[ -r /etc/xr-device.conf ] || fail 'Private device configuration missing'
+. /etc/xr-device.conf
+serial=
+for arg in $(cat /proc/cmdline); do
+    case "$arg" in androidboot.serialno=*) serial=${arg#*=};; esac
+done
+[ "$serial" = "$expected_serial" ] || fail 'Bootloader serial mismatch'
+tr '\000' '\n' < /sys/firmware/devicetree/base/compatible |
+    grep -Fxq 'iqiyi,vr700' || fail 'Expected VR700 board device tree'
+
+# ACM supports early diagnosis. ECM is independent of unverified WLAN firmware.
+g=/sys/kernel/config/usb_gadget/vr700
+mkdir -p "$g" || fail 'USB gadget directory'
+cd "$g" || fail 'USB gadget configuration'
+printf 0x18d1 > idVendor
+printf 0x4ee7 > idProduct
+printf 0x0200 > bcdUSB
+printf 0x0100 > bcdDevice
+mkdir -p strings/0x409 configs/c.1 functions/acm.usb0 functions/ecm.usb0
+printf 'XR' > strings/0x409/manufacturer
+printf 'VR700 openKylin console' > strings/0x409/product
+printf '%s' "$expected_serial" > strings/0x409/serialnumber
+printf '%s' "$usb_device_mac" > functions/ecm.usb0/dev_addr
+printf '%s' "$usb_host_mac" > functions/ecm.usb0/host_addr
+ln -s "$g/functions/acm.usb0" configs/c.1/acm.usb0
+ln -s "$g/functions/ecm.usb0" configs/c.1/ecm.usb0
+n=0
+while [ "$n" -lt 60 ]; do
+    for p in /sys/class/udc/a600000.*; do
+        [ -e "$p" ] || continue
+        echo "${p##*/}" > UDC && break 2
+    done
+    sleep 1; n=$((n+1))
+done
+[ -n "$(cat UDC)" ] || fail 'USB controller unavailable'
+ifconfig usb0 "$usb_address" netmask "$usb_netmask" up || fail 'USB network'
+cd /
+
+if [ "$storage_mode" = maintenance ]; then
+    # No storage mount and no timed reboot: maintenance may contain a long,
+    # separately authorized filesystem operation performed by the operator.
+    echo 'VR700 maintenance console ready; no storage mounted' > /dev/kmsg
+    while :; do
+        setsid sh -c 'exec sh -i </dev/ttyGS0 >/dev/ttyGS0 2>&1'
+        sleep 1
+    done
+fi
+
+# Resolve only the private filesystem UUID. Do not assume MIX's partition index.
+n=0; storage=
+while [ "$n" -lt 60 ]; do
+    for part in /sys/class/block/*/partition; do
+        [ -f "$part" ] || continue
+        name=${part%/partition}; name=${name##*/}
+        candidate=/dev/$name
+        blkid "$candidate" 2>/dev/null | grep -Fq "UUID=\"$storage_uuid\"" || continue
+        [ -z "$storage" ] || fail 'Ambiguous storage UUID'
+        storage=$candidate
+    done
+    [ -b "$storage" ] && break
+    sleep 1; n=$((n+1))
+done
+[ -b "$storage" ] || fail 'Storage filesystem UUID missing'
+case "$storage_mode" in
+    osstore)
+        mount -t ext4 -o rw,noatime "$storage" /store || fail 'osstore mount'
+        [ "$(cat /store/systems/openkylin/rootfs/etc/xr-rootfs-id 2>/dev/null)" = vr700-openkylin-3.0-arm64 ] || fail 'Installation marker mismatch'
+        mount --bind /store/systems/openkylin/rootfs /newroot || fail 'Root bind'
+        ;;
+    userdata-image)
+        # Validate the image and ext4 marker before allowing a writable mount.
+        mount -t f2fs -o ro,norecovery,nosuid,nodev,noexec "$storage" /store || fail 'Read-only userdata mount'
+        image=/store/local/openkylin/rootfs.ext4
+        [ "$(readlink -f "$image")" = "$image" ] || fail 'Image path contains symlinks'
+        [ -f "$image" ] && [ "$(stat -c %s "$image")" = 25769803776 ] || fail 'Expected regular 24 GiB image'
+        losetup -r /dev/loop0 "$image" || fail 'Read-only image loop'
+        blkid /dev/loop0 | grep -Fq "UUID=\"$rootfs_uuid\"" || fail 'Image filesystem UUID mismatch'
+        mount -t ext4 -o ro,noload /dev/loop0 /newroot || fail 'Read-only image filesystem'
+        [ "$(cat /newroot/etc/xr-rootfs-id 2>/dev/null)" = vr700-openkylin-3.0-arm64 ] || fail 'Installation marker mismatch'
+        umount /newroot || fail 'Unmount image validation'
+        losetup -d /dev/loop0 || fail 'Detach validation loop'
+        umount /store || fail 'Unmount userdata validation'
+        mount -t f2fs -o rw,noatime,nosuid,nodev,noexec "$storage" /store || fail 'Userdata mount'
+        losetup /dev/loop0 "$image" || fail 'Image loop'
+        mount -t ext4 -o rw,noatime /dev/loop0 /newroot || fail 'Image filesystem'
+        ;;
+    *) fail 'Unsupported storage mode';;
+esac
+[ -x /newroot/sbin/init ] || fail 'Installed systemd missing'
+[ -d /newroot/usr/lib/modules/"$(uname -r)" ] || fail 'Matching kernel modules missing'
+mkdir -p /newroot/run /newroot/dev /newroot/proc /newroot/sys /run/xr-store
+mount --move /store /run/xr-store || fail 'Move backing storage'
+now=$(date +%s)
+seed=$(cat /build-epoch)
+[ "$now" -ge "$seed" ] || date -s "@$seed"
+cat /proc/cmdline > /run/vr700-initramfs-cmdline
+printf '%s\n' "$storage_mode" > /run/vr700-root-storage
+printf 'VR700 identity, filesystem UUID and installation verified\n' > /run/vr700-handoff
+mount --move /dev /newroot/dev || fail 'Move dev'
+mount --move /proc /newroot/proc || fail 'Move proc'
+mount --move /sys /newroot/sys || fail 'Move sys'
+mount --move /run /newroot/run
+exec switch_root /newroot /sbin/init

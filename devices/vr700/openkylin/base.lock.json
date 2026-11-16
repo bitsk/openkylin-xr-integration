@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "architecture": "arm64",
+  "system": "openkylin",
+  "version": "3.0",
+  "iso_sha256": "2e82bb049620df196277b8e6e692a54bc0d7e76bfaa91bee970685e2be76c930",
+  "squashfs_sha256": "e77c25d7f33041474a5f4150a5cc7b8e9f5282f750a156d7f0e39a3892ca6b29",
+  "prepared_tar_sha256": "31717343b39106e03c435785c6a042250909a05f8dc43be80e37d3ffd4fa09f3",
+  "prepared_by": "xr-image-tools/systems/openkylin/adapter.py",
+  "excluded_path": "./sysroot/ostree/repo",
+  "checksum_scope": "Official ISO MD5 and internal squashfs SHA-256 were matched; locally pinned SHA-256, no detached signature verified."
+}
