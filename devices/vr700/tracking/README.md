@@ -106,3 +106,12 @@ RFSA inputs are checked against the same independent VR700 capture manifest.
 pinned libraries in `native-libraries.json`, including pixman 0.46.4 required
 by the selected Gamescope. A dependency listing alone does not prove lazy
 symbol resolution; use a bind-now startup check with the target loader.
+
+The controller namespace requires an empty regular
+`system/bin/a081-controller-sdk-probe` bind target and existing `proc`/`dev`
+mountpoints. The preparer creates these without importing any executable into
+the placeholder. The installed launcher binds the exact packaged worker there.
+The Bionic asset manifest must be root-owned mode 0644; all parent directories
+are 0755, private XML remains 0600, and only namespace temporary directories
+are 1777. The preparer applies these modes independently of the host umask or
+asset source modes. No extra calibration alias is created.

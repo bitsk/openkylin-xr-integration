@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -24,6 +25,7 @@ def source_module(root, commit, relative, name):
 
 
 def main():
+    os.umask(0o022)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--private-input', type=Path, required=True)
     parser.add_argument('--calibration', type=Path, required=True)
@@ -71,6 +73,12 @@ def main():
             not controller.get('input_socket', '').startswith('/run/xr-vr700-controller-input-') or
             controller.get('camera_env', {}).get('A081_CONTROLLER_INPUT_SOCKET') != controller.get('input_socket')):
         parser.error('Explicit matching VR700 UART controller plan required')
+    producer = controller.get('producer_argv', [])
+    if producer.count('--root') != 1 or producer.index('--root') + 1 >= len(producer):
+        parser.error('Controller SDK requires one explicit namespace root')
+    sdk_root = producer[producer.index('--root') + 1]
+    if not device_api.ordinary_path(sdk_root, '/opt/') or 'vr700' not in Path(sdk_root).parts:
+        parser.error('Controller SDK requires a private VR700 namespace root')
     radio = controller.get('radio_argv', [])
     if not radio or radio[0] != '/usr/bin/xr-controller-uart':
         parser.error('Select the installed VR700 UART helper')
@@ -156,8 +164,19 @@ def main():
         'driver_deckard': {'enable': False}, 'driver_frame_hmd': {'enable': False},
         'driver_frame_controller': {'enable': False}
     }, indent=2) + '\n').encode())
+    # Bind target only: installed project worker is mounted over this empty file.
+    write(sdk_root + '/system/bin/a081-controller-sdk-probe', b'')
+    for relative in ('proc', 'dev', 'tmp', 'data/local/tmp'):
+        (root / Path(sdk_root).relative_to('/') / relative).mkdir(parents=True, exist_ok=True)
     if args.hand_assets:
         shutil.copytree(args.hand_assets, root / Path(hand['assets']).relative_to('/'))
+    # copytree retains upstream modes; imported private assets must be immutable.
+    for path in [root, *root.rglob('*')]:
+        if path.is_symlink():
+            continue
+        path.chmod(0o755 if path.is_dir() else path.stat().st_mode & 0o755)
+    for relative in ('tmp', 'data/local/tmp'):
+        (root / Path(sdk_root).relative_to('/') / relative).chmod(0o1777)
     receipt = dict(schema=1, device='vr700', tracking='physical-input-only',
         session_commit=args.session_commit, hand_commit=args.hand_commit,
         calibration_sha256=digest, config6_sha256=config_digest, calibration_camera_count=4,

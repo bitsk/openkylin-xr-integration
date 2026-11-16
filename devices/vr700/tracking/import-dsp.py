@@ -3,11 +3,13 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 
 
 def main():
+    os.umask(0o022)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stock', type=Path, required=True)
     parser.add_argument('--manifest', type=Path, required=True)
