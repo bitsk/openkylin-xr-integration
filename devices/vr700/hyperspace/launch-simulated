@@ -25,7 +25,7 @@ prefix=/opt/xr/vr700-simulated
 [[ -n ${WAYLAND_DISPLAY:-} ]] || { echo 'Use the installed Wayland desktop session environment.' >&2; exit 2; }
 unset XR_ENABLE_API_LAYERS XR_API_LAYER_PATH XR_RUNTIME_JSON
 export XR_DESKTOP_PREFIX=/usr
-export XR_SYSTEM_CONTROLS_PROVIDER=none
+unset XR_SYSTEM_CONTROLS_COMMAND
 printf '%s\n' 'VR700 HyperSpace: simulated input; desktop Wayland presentation; no physical tracking or optical acceptance.'
 exec "$prefix/tools/native/run-desktop.sh" --native-development --simulated-input \
  --runtime-prefix "$prefix" --renderer freedreno --presentation wayland \
