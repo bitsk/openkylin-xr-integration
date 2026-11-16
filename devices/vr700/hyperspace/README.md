@@ -7,7 +7,11 @@ simulated devices. Its external compiler/SDK inputs are explicitly supplied
 and hashed by the build manifest.
 
 Install the seven generic component packages listed by that profile, preserving
-their normal Debian dependencies. Place its runtime tree and the exact builder
+their normal Debian dependencies. Include the ARM64 OpenXR loader selected by
+`dependencies/openxr-loader/source.lock.json`; the base does not supply it.
+The private Mesa package must enable the Wayland platform (`26.3.0+xr4` or later),
+since a direct-display-only ICD cannot expose `VK_KHR_wayland_surface`.
+Place its runtime tree and the exact builder
 commit's `tools/common` and `tools/native` directories below
 `/opt/xr/vr700-simulated`. Install `launch-simulated` as
 `/usr/local/bin/vr700-hyperspace-simulated`. No service or autostart is installed.
