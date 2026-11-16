@@ -5,9 +5,15 @@ MIX per-device calibration, boot images, wireless identities and root selectors
 are not inputs to this model. Kernel code remains in `bitsk/qiyu-kernel` and its
 selected commit is packaged by `xr-kernel`.
 
-The model is a bring-up candidate. The presence of these files does not establish
-system boot, display, tracking or HyperSpace acceptance. The generic native XR
-metapackage currently selects A081 resources and must not be installed on VR700.
+Installed openKylin boot, USB ACM/ECM, dual DSI initialization, the Kylin Wayland
+desktop and Adreno 650 Vulkan rendering have passed device checks. HyperSpace
+completed a bounded simulated-input run with 3,491 stereo frames and clean
+component shutdown. Android B/root return and the existing application inventory
+were checked after userdata shrink and after the installed system run.
+
+This validates initial graphics bring-up. Physical headset/controller/hand
+tracking, radio, audio and wearer/optical acceptance remain pending. The generic
+native XR metapackage selects A081 resources and must not be installed on VR700.
 
 ## Installed openKylin root
 

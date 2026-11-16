@@ -3,11 +3,26 @@
   "id": "vr700",
   "name": "Qiyu VR700 / DREAM PRO",
   "architecture": "arm64",
-  "systems": ["openkylin"],
+  "systems": [
+    "openkylin"
+  ],
   "overlay": "overlay",
   "kernel_repo": "https://github.com/bitsk/xr-kernel",
   "automatic_device_install": false,
   "hardware_validated": false,
-  "status": "bring-up candidate; system boot, display and XR acceptance pending",
-  "kernel_command_line": ["firmware_class.path=/usr/lib/firmware/xr/vr700"]
+  "status": "installed openKylin and simulated HyperSpace graphics verified; physical tracking and wearer acceptance pending",
+  "kernel_command_line": [
+    "firmware_class.path=/usr/lib/firmware/xr/vr700"
+  ],
+  "validated_features": [
+    "60 GiB osstore installation",
+    "Android root return",
+    "installed openKylin boot",
+    "USB ACM and ECM",
+    "dual DSI kernel initialization and Wayland desktop",
+    "Adreno 650 Vulkan rendering",
+    "HyperSpace simulated-input startup and cleanup"
+  ],
+  "physical_tracking_validated": false,
+  "physical_wearer_validated": false
 }
