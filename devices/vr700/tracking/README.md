@@ -88,3 +88,11 @@ When creating a deployment archive for openKylin, map staged `opt/` contents to
 owner/group 0 and directory mode 0755, preserve private XML mode 0600, omit the
 archive root entry, and extract with `--no-overwrite-dir`. Do not transfer host
 ownership or replace the system root directory.
+
+The direct SEE IMU launcher selects `tracking/stock-runtime/qcom/dsp/slpi`.
+VR700 names the original directory `vendor/dsp/sdsp`; create the explicit
+`slpi -> sdsp` alias and include the original
+`system/lib/rfsa/adsp/libsns_low_lat_stream_skel.so` there. `import-slpi.py`
+accepts `--stock`, its capture `--manifest`, and a new `--output` qcom/dsp
+directory, checks every input digest, and creates this mapping offline. It must
+use this headset's capture, including its SLPI shell; no MIX fallback exists.
