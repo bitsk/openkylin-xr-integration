@@ -92,7 +92,12 @@ ownership or replace the system root directory.
 The direct SEE IMU launcher selects `tracking/stock-runtime/qcom/dsp/slpi`.
 VR700 names the original directory `vendor/dsp/sdsp`; create the explicit
 `slpi -> sdsp` alias and include the original
-`system/lib/rfsa/adsp/libsns_low_lat_stream_skel.so` there. `import-slpi.py`
+`system/lib/rfsa/adsp/libsns_low_lat_stream_skel.so` there. `import-dsp.py`
 accepts `--stock`, its capture `--manifest`, and a new `--output` qcom/dsp
 directory, checks every input digest, and creates this mapping offline. It must
 use this headset's capture, including its SLPI shell; no MIX fallback exists.
+
+The same importer includes the CDSP RFSA QVR driver, camera/3DoF helpers, XR2
+8250 tracker, camera receiver, SNPE V66 and calculator libraries alongside the
+original vendor CDSP runtime. Vendor DSP directories alone are insufficient;
+RFSA inputs are checked against the same independent VR700 capture manifest.
