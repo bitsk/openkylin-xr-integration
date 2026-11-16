@@ -8,6 +8,11 @@ mount -t devtmpfs devtmpfs /dev || mount -t tmpfs -o mode=0755 tmpfs /dev
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mdev -s
+# mdev's default mode is 0660. System services such as messagebus can start
+# before udev corrects these nodes after switch_root.
+for node in null zero full random urandom tty; do
+    [ ! -c "/dev/$node" ] || chmod 0666 "/dev/$node"
+done
 mount -t tmpfs -o mode=0755 tmpfs /run
 mkdir -p /sys/kernel/config
 mount -t configfs configfs /sys/kernel/config
