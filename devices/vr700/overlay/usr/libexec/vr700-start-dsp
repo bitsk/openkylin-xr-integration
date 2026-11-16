@@ -1,7 +1,38 @@
 #!/usr/bin/python3
 """Start the VR700 remote processors after the installed firmware is visible."""
 import os
+import sys
+import time
 from pathlib import Path
+
+
+def start_processor(name, entry):
+    state_file = entry / 'state'
+    for attempt in range(1, 4):
+        state = state_file.read_text().strip()
+        if state == 'running':
+            return
+        if state != 'offline':
+            raise RuntimeError(name + ': unexpected state ' + state)
+        error = None
+        try:
+            state_file.write_text('start\n')
+        except OSError as exc:
+            error = exc
+            print(f'{name}: start attempt {attempt}/3 failed: {exc}', file=sys.stderr, flush=True)
+        state = state_file.read_text().strip()
+        if state == 'running':
+            return
+        if state != 'offline':
+            raise RuntimeError(name + ': unexpected state after start: ' + state) from error
+        if error is None:
+            print(f'{name}: start attempt {attempt}/3 left processor offline', file=sys.stderr, flush=True)
+        if attempt == 3:
+            raise RuntimeError(name + ': still offline after three start attempts') from error
+        # A real VR700 CDSP start returned ENOMEM immediately after SLPI boot.
+        # Retry only the unchanged offline state, never reset a running DSP.
+        print(name + ': retrying offline processor in 2 seconds', file=sys.stderr, flush=True)
+        time.sleep(2)
 
 
 def main():
@@ -34,10 +65,7 @@ def main():
             raise RuntimeError('remote processor is not available: ' + name)
     for name in ('slpi', 'cdsp'):
         entry = processors[name]
-        if (entry / 'state').read_text().strip() == 'offline':
-            (entry / 'state').write_text('start\n')
-        if (entry / 'state').read_text().strip() != 'running':
-            raise RuntimeError('remote processor did not start: ' + name)
+        start_processor(name, entry)
         print(name + ': running', flush=True)
 
 
