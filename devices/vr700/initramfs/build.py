@@ -75,7 +75,7 @@ def main():
                 'file /init ' + str(out / 'init') + ' 0755 0 0',
                 'file /etc/xr-device.conf ' + str(out / 'xr-device.conf') + ' 0600 0 0',
                 'file /build-epoch ' + str(out / 'build-epoch') + ' 0644 0 0']
-    applets = 'blkid cat date grep ifconfig ln losetup mdev mkdir mount readlink reboot setsid sh sleep stat switch_root sync tr umount uname cp dd df dmesg du free head ls mv od ps rm sed sha256sum tail touch wc'
+    applets = 'blkid cat date grep ifconfig ln losetup mdev mkdir mount readlink reboot setsid sh sleep stat switch_root sync tr umount uname cp dd df dmesg du free head ls mv od ps rm sed sha256sum tail touch wc cmp blockdev awk cut rmdir basename chmod'
     entries += ['slink /bin/' + name + ' busybox 0777 0 0' for name in applets.split()]
     extra_hashes = {}
     destinations = {entry.split()[1] for entry in entries}
