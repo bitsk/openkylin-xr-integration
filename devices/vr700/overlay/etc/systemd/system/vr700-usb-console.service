@@ -5,8 +5,8 @@ ConditionPathExists=/dev/ttyGS0
 
 [Service]
 Type=simple
-ExecStartPre=/usr/bin/stty -F /dev/ttyGS0 -echo -onlcr -ixon
-ExecStart=/bin/bash --noprofile --norc -i
+ExecStartPre=/usr/bin/stty -F /dev/ttyGS0 cols 160 rows 40 -echo -onlcr -ixon
+ExecStart=/bin/bash --noprofile --norc --noediting -i
 Restart=always
 RestartSec=1
 KillSignal=SIGHUP
