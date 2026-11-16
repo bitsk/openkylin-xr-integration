@@ -12,6 +12,9 @@ import subprocess
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', type=Path, required=True)
+    p.add_argument('--offline-chroot', action='store_true',
+                   help='Permit root=/ only in an explicitly marked chroot without proc or systemd runtime')
+    p.add_argument('--board-root', type=Path, help='Explicit committed devices/vr700 source directory')
     p.add_argument('--modules', type=Path, required=True,
                    help='Directory containing lib/modules/KERNEL_RELEASE or usr/lib/modules/KERNEL_RELEASE')
     p.add_argument('--kernel-release', required=True)
@@ -21,7 +24,16 @@ def main():
     root = a.root.resolve()
     if os.geteuid() != 0:
         p.error('Run offline root configuration as root to preserve owners')
-    if root == Path('/') or not root.is_dir() or (root / 'etc/xr-rootfs-id').exists():
+    if root == Path('/'):
+        token = Path('/run/vr700-offline-config')
+        if (not a.offline_chroot or Path('/proc/self').exists()
+                or Path('/run/systemd/system').exists() or not token.is_file()
+                or token.stat().st_uid != 0 or token.stat().st_mode & 0o077
+                or token.read_text().strip() != 'vr700-maintenance-offline-root'):
+            p.error('root=/ requires an explicitly marked offline chroot without proc/systemd')
+    elif a.offline_chroot:
+        p.error('--offline-chroot applies only to root=/')
+    if not root.is_dir() or (root / 'etc/xr-rootfs-id').exists():
         p.error('Use a fresh, inactive extracted root')
     if '/' in a.kernel_release or not a.kernel_release.endswith('-xr-vr700'):
         p.error('Expected the explicit VR700 kernel release')
@@ -36,7 +48,9 @@ def main():
                     if (a.modules / prefix / a.kernel_release).is_dir()), None)
     if modules is None or not a.firmware.is_dir():
         p.error('Matching modules and explicit VR700 firmware required')
-    board = Path(__file__).resolve().parents[1]
+    board = a.board_root.resolve() if a.board_root else Path(__file__).resolve().parents[1]
+    if json.loads((board / 'model.json').read_text()).get('id') != 'vr700':
+        p.error('Expected VR700 board integration source')
 
     def write(name, text, mode=0o644):
         q = root / name
@@ -54,9 +68,14 @@ def main():
         q.symlink_to(target)
 
     shutil.copytree(board / 'overlay', root, dirs_exist_ok=True, symlinks=True)
-    shutil.copytree(modules, root / 'usr/lib/modules' / a.kernel_release, symlinks=True)
-    shutil.copytree(a.firmware, root / 'usr/lib/firmware/xr/vr700', dirs_exist_ok=True, symlinks=True)
-    subprocess.run(['depmod', '-b', str(root), a.kernel_release], check=True)
+    module_target = root / 'usr/lib/modules' / a.kernel_release
+    if modules.resolve() != module_target.resolve():
+        shutil.copytree(modules, module_target, symlinks=True)
+    firmware_target = root / 'usr/lib/firmware/xr/vr700'
+    if a.firmware.resolve() != firmware_target.resolve():
+        shutil.copytree(a.firmware, firmware_target, dirs_exist_ok=True, symlinks=True)
+    depmod = shutil.which('depmod') or '/usr/sbin/depmod'
+    subprocess.run([depmod, '-b', str(root), a.kernel_release], check=True)
     write('etc/hostname', 'vr700-openkylin\n')
     write('etc/hosts', '127.0.0.1 localhost\n127.0.1.1 vr700-openkylin\n::1 localhost ip6-localhost\n')
     write('etc/fstab', '# VR700 initramfs mounts the installed root and backing storage.\n')
@@ -85,6 +104,8 @@ def main():
                'desktop_enabled': False, 'hyperspace_enabled': False,
                'device_boot_validated': False}
     write('usr/share/xr/vr700-install.json', json.dumps(receipt, indent=2) + '\n')
+    if a.offline_chroot:
+        Path('/run/vr700-offline-config').unlink()
     print(json.dumps(receipt, indent=2))
 
 
