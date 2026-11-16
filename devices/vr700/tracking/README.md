@@ -115,3 +115,11 @@ The Bionic asset manifest must be root-owned mode 0644; all parent directories
 are 0755, private XML remains 0600, and only namespace temporary directories
 are 1777. The preparer applies these modes independently of the host umask or
 asset source modes. No extra calibration alias is created.
+
+Gamescope's deferred backend needs XCB, Xlib and Wayland Vulkan instance
+extensions. Install the distribution's `mesa-vulkan-drivers` (26.0.3-ok3
+in the selected image); `xr-mesa` supplies the separate compositor ICD and
+does not provide X11 WSI. The generated `/etc/xr/vr700-desktop-icd.json`
+selects the distribution driver by absolute library path, preventing the
+private `xr-mesa` library directory from overriding its identical SONAME.
+The two profile ICD paths must remain distinct.

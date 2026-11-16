@@ -130,6 +130,10 @@ def main():
     for key in ('desktop_owner', 'sdsp_listener', 'steamvr', 'steamvr_settings',
                 'system_icd', 'kms_icd', 'runtime_library_paths', 'controller_models_directory'):
         profile[key] = resources[key]
+    if profile['system_icd'] != '/etc/xr/vr700-desktop-icd.json':
+        parser.error('Select the dedicated desktop ICD; xr-mesa lacks X11 WSI')
+    if profile['kms_icd'] == profile['system_icd']:
+        parser.error('Desktop WSI and compositor KMS must use separate ICDs')
     profile['scene'] = dict(mode='command', wait_for_first_tracking_packet=True,
         argv=['/usr/bin/xr-shell-session', '--prefix', '/usr'], working_directory='/home/xr',
         environment={'XR_RUNTIME_JSON': profile['steamvr'] + '/steamxr_linuxarm64.json',
@@ -150,6 +154,12 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(contents)
         target.chmod(mode)
+    # Use an absolute library path: runtime_library_paths includes xr-mesa,
+    # whose same SONAME would otherwise override the desktop driver.
+    desktop_icd = dict(file_format_version='1.0.1',
+        ICD=dict(api_version='1.4.335',
+                 library_path='/usr/lib/aarch64-linux-gnu/libvulkan_freedreno.so'))
+    write(profile['system_icd'], (json.dumps(desktop_icd, indent=2) + '\n').encode())
     for path, library_bytes in native_libraries.items():
         write(path, library_bytes)
     for name, obj in (('vr700-session', profile), ('vr700-controller', controller), ('hand-tracking', hand)):
