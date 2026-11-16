@@ -1,6 +1,7 @@
 [Unit]
 Description=VR700 SLPI sensor registry and runtime files
-After=local-fs.target
+After=local-fs.target vr700-dsp.service
+Requires=vr700-dsp.service
 ConditionPathExists=/dev/fastrpc-sdsp
 ConditionPathIsDirectory=/usr/share/qcom/sm8250/iqiyi/vr700
 

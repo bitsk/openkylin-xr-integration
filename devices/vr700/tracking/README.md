@@ -25,7 +25,7 @@ python3 prepare.py --private-input private-resources.json \
 
 The generated root contains `/etc/xr/vr700-session.json`, its UART controller
 plan, `/etc/xr/hand-tracking.json`, private XML, and neutral runtime settings.
-There is no startup unit activation. Install staged files as root, retaining
+Hand sampling is enabled, but `hand_tracking.runtime_input=false` keeps its socket out of the runtime until real VR700 grip/aim anchors are installed. Set that field to true only after the anchors are verified. There is no startup unit activation. Install staged files as root, retaining
 private XML permissions. Use the component builder with an updated exact source
 lock to install these project packages:
 
@@ -75,3 +75,16 @@ streaming four cameras does not itself establish valid paired 6DoF tracking.
 The UART owner handles radio lifetime. The camera owner remains unique; hands
 consume its shared stream. Physical poses, accepted controller/hand packets,
 scene startup, and later wearer/optical acceptance must be recorded separately.
+
+The board overlay also provides `vr700-dsp.service`. It starts only the offline
+SLPI/CDSP instances whose name and firmware path match VR700, after checking the
+installed root marker, DT identity, and `firmware_class.path`. The sensor-files
+unit requires it. Missing firmware fails explicitly; neither service is enabled
+by these preparation tools. Install `v4l-utils` (`media-ctl`, `v4l2-ctl`), `kbd`
+(`chvt`), and the locked Python gpiod package before session activation.
+
+When creating a deployment archive for openKylin, map staged `opt/` contents to
+`var/opt/` to preserve the distribution's `/opt -> var/opt` link. Store numeric
+owner/group 0 and directory mode 0755, preserve private XML mode 0600, omit the
+archive root entry, and extract with `--no-overwrite-dir`. Do not transfer host
+ownership or replace the system root directory.

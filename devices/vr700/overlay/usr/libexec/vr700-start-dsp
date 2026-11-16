@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+"""Start the VR700 remote processors after the installed firmware is visible."""
+import os
+from pathlib import Path
+
+
+def main():
+    if os.geteuid() != 0:
+        raise RuntimeError('root is required')
+    if Path('/etc/xr-rootfs-id').read_text().strip() != 'vr700-openkylin-3.0-arm64':
+        raise RuntimeError('not the VR700 installed root')
+    if b'iqiyi,vr700' not in Path('/sys/firmware/devicetree/base/compatible').read_bytes().split(b'\0'):
+        raise RuntimeError('not the VR700 board')
+    root = Path('/usr/lib/firmware/xr/vr700')
+    if Path('/sys/module/firmware_class/parameters/path').read_text().strip() != str(root):
+        raise RuntimeError('VR700 firmware_class.path is not selected')
+    processors = {}
+    for entry in Path('/sys/class/remoteproc').glob('remoteproc*'):
+        name = (entry / 'name').read_text().strip()
+        if name in ('slpi', 'cdsp'):
+            if name in processors:
+                raise RuntimeError('ambiguous remote processor: ' + name)
+            processors[name] = entry
+    if set(processors) != {'slpi', 'cdsp'}:
+        raise RuntimeError('SLPI and CDSP must both be registered')
+    # Validate both selections before starting either remote processor.
+    for name, entry in processors.items():
+        firmware = 'qcom/sm8250/iqiyi/vr700/' + name + '.mdt'
+        if (entry / 'firmware').read_text().strip() != firmware:
+            raise RuntimeError('unexpected firmware selection: ' + name)
+        if not (root / firmware).is_file():
+            raise RuntimeError('missing firmware: ' + firmware)
+        if (entry / 'state').read_text().strip() not in ('offline', 'running'):
+            raise RuntimeError('remote processor is not available: ' + name)
+    for name in ('slpi', 'cdsp'):
+        entry = processors[name]
+        if (entry / 'state').read_text().strip() == 'offline':
+            (entry / 'state').write_text('start\n')
+        if (entry / 'state').read_text().strip() != 'running':
+            raise RuntimeError('remote processor did not start: ' + name)
+        print(name + ': running', flush=True)
+
+
+if __name__ == '__main__':
+    main()

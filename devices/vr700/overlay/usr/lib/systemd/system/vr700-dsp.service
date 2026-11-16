@@ -1,0 +1,13 @@
+[Unit]
+Description=Start VR700 DSPs with installed model firmware
+After=local-fs.target
+Before=vr700-sensors-files.service
+ConditionPathExists=/etc/xr-rootfs-id
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/vr700-start-dsp
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
