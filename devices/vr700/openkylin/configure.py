@@ -2,16 +2,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Configure an inactive official openKylin ARM64 root for VR700 bring-up."""
 import argparse
+import configparser
 import json
 import os
 from pathlib import Path
 import shutil
+import shlex
+import xml.etree.ElementTree as ET
 import subprocess
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', type=Path, required=True)
+    p.add_argument('--enable-desktop', action='store_true',
+                   help='Enable local xr autologin in the installed Kylin Wayland session for bring-up')
     p.add_argument('--offline-chroot', action='store_true',
                    help='Permit root=/ only in an explicitly marked chroot without proc or systemd runtime')
     p.add_argument('--board-root', type=Path, help='Explicit committed devices/vr700 source directory')
@@ -95,13 +100,70 @@ def main():
                  'ssh.service', 'ssh.socket', 'lightdm.service'):
         link('etc/systemd/system/' + unit, '/dev/null')
     link('etc/systemd/system/default.target', '/usr/lib/systemd/system/multi-user.target')
+    desktop_session = None
+    if a.enable_desktop:
+        session_file = root / 'usr/share/wayland-sessions/kylin-wlcom.desktop'
+        session = configparser.ConfigParser(interpolation=None)
+        session.read(session_file)
+        command = shlex.split(session.get('Desktop Entry', 'Exec'))
+        if (not command or '/' in command[0]
+                or not os.access(root / 'usr/bin' / command[0], os.X_OK)
+                or not (root / 'usr/lib/systemd/system/lightdm.service').is_file()):
+            p.error('Official Kylin Wayland session and LightDM required')
+        desktop_session = session_file.stem
+        accounts = [line.split(':') for line in (root / 'etc/passwd').read_text().splitlines()]
+        if any(row[0] == 'xr' or row[2] == '1000' for row in accounts):
+            p.error('Fresh base must not already contain xr or UID 1000')
+
+        def run_target(*command):
+            prefix = [] if root == Path('/') else ['chroot', str(root)]
+            subprocess.run(prefix + list(command), check=True,
+                           env={**os.environ, 'PATH': '/usr/sbin:/usr/bin:/sbin:/bin',
+                                'SYSTEMD_OFFLINE': '1'})
+
+        run_target('/usr/sbin/useradd', '--uid', '1000', '--user-group',
+                   '--create-home', '--shell', '/bin/bash',
+                   '--groups', 'video,render,audio,input', 'xr')
+        password = next(line.split(':')[1] for line in (root / 'etc/shadow').read_text().splitlines()
+                        if line.startswith('xr:'))
+        if not password.startswith(('!', '*')):
+            raise ValueError('Desktop account password must remain locked')
+        settings = {
+            'org.ukui.screensaver': {'idle-activation-enabled': 'false',
+                'idle-lock-enabled': 'false', 'sleep-activation-enabled': 'false', 'idle-delay': '0'},
+            'org.ukui.session': {'idle-delay': '0'},
+            'org.ukui.power-manager': {key: '0' for key in
+                ('sleep-computer-ac', 'sleep-computer-battery', 'sleep-computer-ups',
+                 'sleep-display-ac', 'sleep-display-battery', 'sleep-display-ups',
+                 'hibernate-computer-ac', 'hibernate-computer-battery')},
+        }
+        settings['org.ukui.power-manager'].update({'idle-dim-ac': 'false', 'idle-dim-battery': 'false'})
+        schemas = root / 'usr/share/glib-2.0/schemas'
+        text = ''
+        for schema, values in settings.items():
+            tree = ET.parse(schemas / (schema + '.gschema.xml'))
+            available = {key.attrib['name'] for element in tree.findall('schema')
+                         if element.attrib.get('id') == schema for key in element.findall('key')}
+            if not values.keys() <= available:
+                raise ValueError('Installed UKUI schema lacks expected bring-up keys: ' + schema)
+            text += '[' + schema + ']\n' + ''.join(key + '=' + value + '\n' for key, value in values.items()) + '\n'
+        write('usr/share/glib-2.0/schemas/99-vr700-bringup.gschema.override', text)
+        run_target('/usr/bin/glib-compile-schemas', '/usr/share/glib-2.0/schemas')
+        write('etc/lightdm/lightdm.conf.d/50-vr700.conf',
+              '[Seat:*]\nautologin-user=xr\nautologin-user-timeout=0\n'
+              'user-session=' + desktop_session + '\nautologin-session=' + desktop_session + '\n')
+        (root / 'etc/systemd/system/lightdm.service').unlink()
+        link('etc/systemd/system/display-manager.service', '/usr/lib/systemd/system/lightdm.service')
+        link('etc/systemd/system/default.target', '/usr/lib/systemd/system/graphical.target')
     write('usr/local/sbin/boot-android', '#!/bin/sh\nexec systemctl reboot\n', 0o755)
     write('etc/xr-rootfs-id', 'vr700-openkylin-3.0-arm64\n')
     receipt = {'schema': 1, 'system': 'openkylin', 'version': '3.0', 'architecture': 'arm64',
                'device': 'vr700', 'kernel_release': a.kernel_release,
                'firmware_source': 'explicit device-specific input',
                'private_network_or_calibration_imported': False,
-               'desktop_enabled': False, 'hyperspace_enabled': False,
+               'desktop_enabled': a.enable_desktop, 'desktop_session': desktop_session,
+               'desktop_user': 'xr' if a.enable_desktop else None,
+               'desktop_password_locked': bool(a.enable_desktop), 'hyperspace_enabled': False,
                'device_boot_validated': False}
     write('usr/share/xr/vr700-install.json', json.dumps(receipt, indent=2) + '\n')
     if a.offline_chroot:

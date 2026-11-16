@@ -25,6 +25,18 @@ address established by the initramfs. It does not copy another device's host key
 network credentials, calibration or application state. Generic desktop login and
 XR sessions are separate activation/acceptance steps.
 
+For explicit desktop bring-up, `--enable-desktop` creates locked account `xr`
+(UID 1000) with video/render/audio/input groups and enables LightDM local autologin.
+It verifies the installed `kylin-wlcom.desktop` entry and executable, and applies
+only known UKUI idle/lock/sleep settings after verifying their installed schemas.
+SSH remains masked and the password remains locked. This does not enable XR.
+
+A maintenance chroot can use `--root / --offline-chroot` only when `/proc/self`
+and `/run/systemd/system` are absent and the root-owned mode-0600 file
+`/run/vr700-offline-config` contains `vr700-maintenance-offline-root`. The token is
+consumed after successful configuration. Preserve this device directory layout
+or supply `--board-root` when invoking a relocated configuration script.
+
 ## Early userspace
 
 `initramfs/build.py` requires an explicit static ARM64 BusyBox and its SHA-256,
