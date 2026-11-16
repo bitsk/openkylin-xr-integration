@@ -1,0 +1,332 @@
+{
+  "schema": 1,
+  "device": "vr700",
+  "scope": "Required OEM DSP and sensor metadata closure; excludes per-device registry contents and calibration",
+  "files": [
+    {
+      "source": "vendor/dsp/cdsp/example_image.so",
+      "target": "dsp/cdsp/example_image.so",
+      "bytes": 50136,
+      "sha256": "2c59ed03a8358949984df57899d4e77b13060758fe50325204379a336a262fcf"
+    },
+    {
+      "source": "vendor/dsp/cdsp/fastrpc_shell_3",
+      "target": "dsp/cdsp/fastrpc_shell_3",
+      "bytes": 940648,
+      "sha256": "8b8962fe943f8b67fd4a0cadd1d6cb8afc900d922b791393019dd67499537bce"
+    },
+    {
+      "source": "vendor/dsp/cdsp/fastrpc_shell_unsigned_3",
+      "target": "dsp/cdsp/fastrpc_shell_unsigned_3",
+      "bytes": 935068,
+      "sha256": "d0b6733096fc68465bff8dd6baa0746c8facd10a1834a291f84026147ea0581b"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libbenchmark_skel.so",
+      "target": "dsp/cdsp/libbenchmark_skel.so",
+      "bytes": 287688,
+      "sha256": "7b0f257a707f8d6ce09569b29cd094d333339200fd97e0e25ff5cd4587a9df2a"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libc++.so.1",
+      "target": "dsp/cdsp/libc++.so.1",
+      "bytes": 3665376,
+      "sha256": "a3d339c9e2a31fab728857bbe2c3f415b3bc4933e811568d4c0162c70603d419"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libc++abi.so.1",
+      "target": "dsp/cdsp/libc++abi.so.1",
+      "bytes": 650888,
+      "sha256": "0e542dd62d5df4d914fd673a2025fe67793cfc8635837fc1f73487f1a025e6f8"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libcalculator_skel.so",
+      "target": "dsp/cdsp/libcalculator_skel.so",
+      "bytes": 20828,
+      "sha256": "accec5e46191b49a590a0c67efa3836c7acf1849eee6cc0b6404de7fd63deba7"
+    },
+    {
+      "source": "vendor/lib/rfsa/adsp/libcvpdsp_skel.so",
+      "target": "dsp/cdsp/libcvpdsp_skel.so",
+      "bytes": 483504,
+      "sha256": "c5becc54ef14ecab16a40d4b6e2cff29e07ead3769a5726d8d8b0d2404781f23"
+    },
+    {
+      "source": "vendor/lib/rfsa/adsp/libdspCV_skel.so",
+      "target": "dsp/cdsp/libdspCV_skel.so",
+      "bytes": 33304,
+      "sha256": "2777a4ead552d5ea08ca98d8ef2004df7f771a79db14604df19d2622d7260a55"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libdsp_streamer_add_constant.so",
+      "target": "dsp/cdsp/libdsp_streamer_add_constant.so",
+      "bytes": 21144,
+      "sha256": "c5334c1fb222e7c77ffa6e8ca385ec0200f392c1af10f071fe07956042bf2dcd"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libdsp_streamer_binning.so",
+      "target": "dsp/cdsp/libdsp_streamer_binning.so",
+      "bytes": 20600,
+      "sha256": "9fb31b36dec3c8daffce7846eca72d6bfbb4d37dcc3c09c8e9d6cb4e361fbdab"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libdsp_streamer_qvrcam_receiver.so",
+      "target": "dsp/cdsp/libdsp_streamer_qvrcam_receiver.so",
+      "bytes": 21053,
+      "sha256": "95df2850036ddea9832d0651a6f9f9f7a4de42ca8680561b02e5b3e7b314428d"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libdsp_streamer_skel.so",
+      "target": "dsp/cdsp/libdsp_streamer_skel.so",
+      "bytes": 266160,
+      "sha256": "e1df8fd9ca2616455713c90f86cbb6bec1c25b514f332e64b0646a3f0c914268"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libdsp_streamer_vpt.so",
+      "target": "dsp/cdsp/libdsp_streamer_vpt.so",
+      "bytes": 119392,
+      "sha256": "49d04c5a6e6612e38a95c048e6de72664e409f3ee4ee1e3d585a4a5e98e8cfbd"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libdsp_streamer_workloop.so",
+      "target": "dsp/cdsp/libdsp_streamer_workloop.so",
+      "bytes": 89840,
+      "sha256": "30d5edd44df3eaa4b62a70f0f257fe5452ad7dce9e1cec5efca2c1e8604900a4"
+    },
+    {
+      "source": "vendor/lib/rfsa/adsp/libfastcvadsp.so",
+      "target": "dsp/cdsp/libfastcvadsp.so",
+      "bytes": 1477032,
+      "sha256": "eb1b3e1884afaab3c1b5f4f9898864421ca37cd98d004ef3949a9cae13266740"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libhcp_rpc_skel.so",
+      "target": "dsp/cdsp/libhcp_rpc_skel.so",
+      "bytes": 247144,
+      "sha256": "72a790640262e34b59fa2d5dd8aa2b630b38bd1875aa143695ed20b68ad66380"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libhta_dsp_skel.so",
+      "target": "dsp/cdsp/libhta_dsp_skel.so",
+      "bytes": 254864,
+      "sha256": "43ea064102ac6fc8982a8f0169a064f2fa54e31b3a5023e4384d276daab500db"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libloadalgo_skel.so",
+      "target": "dsp/cdsp/libloadalgo_skel.so",
+      "bytes": 42792,
+      "sha256": "c4e40f57a36732ec054057ac749f755a1b573abbbb479a1586589753e817c4a6"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libnn_preproc.so",
+      "target": "dsp/cdsp/libnn_preproc.so",
+      "bytes": 249032,
+      "sha256": "8f6d1ac34715836e1c791d429dbbc9d38bbd67270e8c366eead6a7313f207147"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libnn_preproc_postproc.so",
+      "target": "dsp/cdsp/libnn_preproc_postproc.so",
+      "bytes": 456128,
+      "sha256": "d6f3a2976fd7664978b0c82e5229310994f0ce6153a384a823be75aba5b9cc01"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libqvr_3dof_tracker_skel.so",
+      "target": "dsp/cdsp/libqvr_3dof_tracker_skel.so",
+      "bytes": 38096,
+      "sha256": "cb3b7f10171a28be93b6f1c25db41ba643c923ce47ee739ee558487ce9b55779"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libqvr_cam_dsp_driver_skel.so",
+      "target": "dsp/cdsp/libqvr_cam_dsp_driver_skel.so",
+      "bytes": 100741,
+      "sha256": "e7c143d708627a7aae2163d37e226494ca2bf1618ac9eca72229359443347338"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libqvr_dsp_driver_skel.so",
+      "target": "dsp/cdsp/libqvr_dsp_driver_skel.so",
+      "bytes": 139568,
+      "sha256": "71022184524650e554cff0067f9e8787a1e88b0f80d3bff163aa9f2fcc462255"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libsnpe_dsp_v66_domains_v2_skel.so",
+      "target": "dsp/cdsp/libsnpe_dsp_v66_domains_v2_skel.so",
+      "bytes": 1640266,
+      "sha256": "7e58d46e89b98de66dd1e1d0c1282bafeb01231dd0887dca94aeefeaadbd4555"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libstabilitydomain_skel.so",
+      "target": "dsp/cdsp/libstabilitydomain_skel.so",
+      "bytes": 86224,
+      "sha256": "f248866ac7cb70dbfcac68bb911ef628292fe305dd5ef80278902f074b6a9b1a"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libsysmon_skel.so",
+      "target": "dsp/cdsp/libsysmon_skel.so",
+      "bytes": 235504,
+      "sha256": "0a9d6028c7a0802bb34dbdf8ba43cffed03283775d98b63fcc36956cecb5ff59"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libsysmondomain_skel.so",
+      "target": "dsp/cdsp/libsysmondomain_skel.so",
+      "bytes": 300848,
+      "sha256": "ff8c948fdbbb4501232840197063e7f63cc503bf8ecf93a33e9476d4e82ada8b"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libsysmonhvxthrottle_skel.so",
+      "target": "dsp/cdsp/libsysmonhvxthrottle_skel.so",
+      "bytes": 29160,
+      "sha256": "e0dc67d43d75fb20923296a64d7ad0edf5372a6d1b19a7821bfa4708d46983ce"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libsysmonquery_skel.so",
+      "target": "dsp/cdsp/libsysmonquery_skel.so",
+      "bytes": 37576,
+      "sha256": "39b4980ed3d1660a1b7c924b76d42f425e7d378fae2884e506843a80fc5843c1"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libtracker_6dof_skel_8250.so",
+      "target": "dsp/cdsp/libtracker_6dof_skel_8250.so",
+      "bytes": 27982976,
+      "sha256": "6f0e9205f8401502b554ce47d077b70ad5e054cb18b4acec6cd0bc7ec238d27d"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_aie.so",
+      "target": "dsp/cdsp/libvpp_aie.so",
+      "bytes": 187944,
+      "sha256": "3f3592e50dbbbf7e7751ebfc9eceb3a8c65b07730be0704a646872459422259f"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_frc.so",
+      "target": "dsp/cdsp/libvpp_frc.so",
+      "bytes": 2616576,
+      "sha256": "f60c741f7296a03a517f7efbcc63b11a991210111995346d4d7ba85c7b11b552"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_mcnr.so",
+      "target": "dsp/cdsp/libvpp_mcnr.so",
+      "bytes": 4118992,
+      "sha256": "7ce3c2c38ab89d323903b6b769563d7c218b78d1ddef838860828c0b571a1b1c"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_mvp.so",
+      "target": "dsp/cdsp/libvpp_mvp.so",
+      "bytes": 6512,
+      "sha256": "0b2d1a2276cc45b5d906d8583cb735abc87f104dcc63e8b52d35307187e73ad9"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_nr.so",
+      "target": "dsp/cdsp/libvpp_nr.so",
+      "bytes": 6512,
+      "sha256": "31cc90be09dac4070617ec6aa580b76b48ada846fa4005d3661371a4a9407d58"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_qbr.so",
+      "target": "dsp/cdsp/libvpp_qbr.so",
+      "bytes": 6512,
+      "sha256": "93f5c26add6db253677636ccb79d5d2eaa2bcbe2b79e58adf1463a152c2e1cb5"
+    },
+    {
+      "source": "vendor/dsp/cdsp/libvpp_svc_skel.so",
+      "target": "dsp/cdsp/libvpp_svc_skel.so",
+      "bytes": 335696,
+      "sha256": "ad5318ab741c8deb73a2c2acb70da689daf1f5fdfa279e26df9ff039aae67da9"
+    },
+    {
+      "source": "vendor/dsp/cdsp/map_SHARED_LIBS_8250.cdsp.prodQ.txt",
+      "target": "dsp/cdsp/map_SHARED_LIBS_8250.cdsp.prodQ.txt",
+      "bytes": 1917,
+      "sha256": "478f784cb790945f6816a098e12461085fcf17b60ed6927b673aa59d9448dbdd"
+    },
+    {
+      "source": "vendor/dsp/cdsp/ubwcdma_dynlib.so",
+      "target": "dsp/cdsp/ubwcdma_dynlib.so",
+      "bytes": 172712,
+      "sha256": "aae507e2c1ea36913f526bf5a747fab29efcc5428c2a359a64d551f24c5ff421"
+    },
+    {
+      "source": "vendor/dsp/sdsp/fastrpc_shell_2",
+      "target": "dsp/sdsp/fastrpc_shell_2",
+      "bytes": 907580,
+      "sha256": "a2948fdf31e381c38acd0335e23ed986c3791f48331c6d3aa67540081f1c1a60"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libsns_device_mode_skel.so",
+      "target": "dsp/sdsp/libsns_device_mode_skel.so",
+      "bytes": 20824,
+      "sha256": "7b1c3b4ab766bc420e1a8a2bd9c86f8e27a093981c1beee26b21175ec3205b76"
+    },
+    {
+      "source": "system/lib/rfsa/adsp/libsns_low_lat_stream_skel.so",
+      "target": "dsp/sdsp/libsns_low_lat_stream_skel.so",
+      "bytes": 29628,
+      "sha256": "bdf5cbe7328bf772eb143a38c214121847ddf7f97a11cae83301f2057e35830f"
+    },
+    {
+      "source": "vendor/dsp/sdsp/libstabilitydomain_skel.so",
+      "target": "dsp/sdsp/libstabilitydomain_skel.so",
+      "bytes": 86288,
+      "sha256": "60a99e00240f1c291022e7383856441db3f75eda9114e769b872ebb4580922a0"
+    },
+    {
+      "source": "vendor/dsp/sdsp/libsysmon_skel.so",
+      "target": "dsp/sdsp/libsysmon_skel.so",
+      "bytes": 145680,
+      "sha256": "e8cae14977f56600265f33b047225af25068c8fcf8e35fdad55780bbfc7c1ec2"
+    },
+    {
+      "source": "vendor/dsp/sdsp/libsysmondomain_skel.so",
+      "target": "dsp/sdsp/libsysmondomain_skel.so",
+      "bytes": 209872,
+      "sha256": "ac7db02e1ab1d76d86c5f95953c3e020ba25b4e7dd7c9f41afa6078617160f4f"
+    },
+    {
+      "source": "vendor/dsp/sdsp/libsysmonquery_skel.so",
+      "target": "dsp/sdsp/libsysmonquery_skel.so",
+      "bytes": 37672,
+      "sha256": "5cff7d7c174984399c4d0d6176e1b8ae41d6b7e5a6346eecd686f22f08278f97"
+    },
+    {
+      "source": "vendor/dsp/sdsp/map_SLPI_SHARED_LIBS_8250.slpi.prodQ.txt",
+      "target": "dsp/sdsp/map_SLPI_SHARED_LIBS_8250.slpi.prodQ.txt",
+      "bytes": 338,
+      "sha256": "f1491ceb143909b223a453b827ffe89ad4356f2bdb4c53f197f3604dcc041f04"
+    },
+    {
+      "source": "vendor/dsp/sdsp/map_SSC_SLPI_USER_8250.slpi.prodQ.txt",
+      "target": "dsp/sdsp/map_SSC_SLPI_USER_8250.slpi.prodQ.txt",
+      "bytes": 129,
+      "sha256": "cdd5bddfd9561b8df45eb6ca8b6709a59d95b5156947dda048e623fb0be34768"
+    },
+    {
+      "source": "vendor/dsp/sdsp/sns_bring_to_ear.so",
+      "target": "dsp/sdsp/sns_bring_to_ear.so",
+      "bytes": 133736,
+      "sha256": "2e5bc6922bc928a479b386ebc9af38110c998ae8f320cc1964487b26bca04bd3"
+    },
+    {
+      "source": "vendor/dsp/sdsp/wigig_sensing.so",
+      "target": "dsp/sdsp/wigig_sensing.so",
+      "bytes": 158792,
+      "sha256": "c3cd02a323888b18c1019f4fa8abaa6e4f7001abd63e0051d2f8dbd7c2f17f66"
+    },
+    {
+      "source": "mnt/vendor/persist/sensors/registry/sns_reg_version",
+      "target": "sensors/sns_reg_version",
+      "bytes": 10,
+      "sha256": "9c7a6b1706fbd672af64d908c7bd1044958ce50801e86d112fbfbba57f1dd4ff"
+    },
+    {
+      "source": "sys/devices/soc0/hw_platform",
+      "target": "socinfo/hw_platform",
+      "bytes": 4,
+      "sha256": "304bcb920c7df50d01920d8d578d59860996821aaeecaf4bc4699ec58d862505"
+    }
+  ],
+  "aliases": {
+    "dsp/slpi": "sdsp"
+  },
+  "dsp_resident_dependencies": [
+    "libc.so",
+    "libgcc.so"
+  ]
+}

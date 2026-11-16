@@ -10,6 +10,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from runtime_import import validate_runtime, write_runtime
 
 
 def source_module(root, commit, relative, name):
@@ -28,6 +29,8 @@ def main():
     os.umask(0o022)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--private-input', type=Path, required=True)
+    parser.add_argument('--stock', type=Path, required=True)
+    parser.add_argument('--stock-manifest', type=Path, required=True)
     parser.add_argument('--calibration', type=Path, required=True)
     parser.add_argument('--calibration-sha256', required=True)
     parser.add_argument('--config6', type=Path, required=True)
@@ -44,6 +47,7 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         parser.error('Choose a new output directory; this tool never updates an installed system')
+    runtime_lock, runtime_files = validate_runtime(args.stock, args.stock_manifest)
     resources = json.loads(args.private_input.read_text())
     if resources.get('device') != 'vr700':
         parser.error('Private resources must explicitly identify VR700')
@@ -174,6 +178,9 @@ def main():
         'driver_deckard': {'enable': False}, 'driver_frame_hmd': {'enable': False},
         'driver_frame_controller': {'enable': False}
     }, indent=2) + '\n').encode())
+    runtime_destinations = (prefix + '/tracking/stock-runtime/qcom', profile['sdsp_listener']['root'])
+    for destination in runtime_destinations:
+        write_runtime(root / Path(destination).relative_to('/'), runtime_lock, runtime_files)
     # Bind target only: installed project worker is mounted over this empty file.
     write(sdk_root + '/system/bin/a081-controller-sdk-probe', b'')
     for relative in ('proc', 'dev', 'tmp', 'data/local/tmp'):
@@ -191,6 +198,8 @@ def main():
         session_commit=args.session_commit, hand_commit=args.hand_commit,
         calibration_sha256=digest, config6_sha256=config_digest, calibration_camera_count=4,
         original_hand_assets_checked=bool(args.hand_assets),
+        runtime_files=runtime_lock['files'], runtime_destinations=runtime_destinations,
+        sensor_registry_contents_imported=False,
         camera_synchronization=rig['synchronization'],
         shared_camera_owner='head producer; hand and controller consumers subscribe',
         controller_transport=transport, services_started=False,
