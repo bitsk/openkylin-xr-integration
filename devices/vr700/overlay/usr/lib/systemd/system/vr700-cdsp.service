@@ -1,0 +1,12 @@
+[Unit]
+Description=Start VR700 CDSP after the sensor registry listener is ready
+Requires=vr700-slpi.service
+Wants=vr700-sensors-files.service
+After=vr700-slpi.service vr700-sensors-files.service
+ConditionPathExists=/etc/xr-rootfs-id
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/vr700-start-dsp cdsp
+TimeoutStartSec=75
+RemainAfterExit=yes

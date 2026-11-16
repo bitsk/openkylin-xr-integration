@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Start the VR700 remote processors after the installed firmware is visible."""
+"""Guard staged VR700 remoteproc startup and the one resident SDSP listener."""
 import os
 import sys
 import time
@@ -29,13 +29,13 @@ def start_processor(name, entry):
             print(f'{name}: start attempt {attempt}/3 left processor offline', file=sys.stderr, flush=True)
         if attempt == 3:
             raise RuntimeError(name + ': still offline after three start attempts') from error
-        # A real VR700 CDSP start returned ENOMEM immediately after SLPI boot.
         # Retry only the unchanged offline state, never reset a running DSP.
+        # ENOMEM is not evidence of readiness or of a fixed startup delay.
         print(name + ': retrying offline processor in 2 seconds', file=sys.stderr, flush=True)
         time.sleep(2)
 
 
-def main():
+def processors_for_board():
     if os.geteuid() != 0:
         raise RuntimeError('root is required')
     if Path('/etc/xr-rootfs-id').read_text().strip() != 'vr700-openkylin-3.0-arm64':
@@ -63,10 +63,91 @@ def main():
             raise RuntimeError('missing firmware: ' + firmware)
         if (entry / 'state').read_text().strip() not in ('offline', 'running'):
             raise RuntimeError('remote processor is not available: ' + name)
-    for name in ('slpi', 'cdsp'):
-        entry = processors[name]
-        start_processor(name, entry)
-        print(name + ': running', flush=True)
+    return processors
+
+
+def sdsp_owners():
+    owners = []
+    for process in Path('/proc').iterdir():
+        if not process.name.isdecimal():
+            continue
+        try:
+            held = False
+            for fd in (process / 'fd').iterdir():
+                try:
+                    held |= str(fd.readlink()) in ('/dev/fastrpc-sdsp', '/dev/fastrpc-sdsp-secure')
+                except FileNotFoundError:
+                    pass
+            if held:
+                argv = (process / 'cmdline').read_bytes().rstrip(b'\0').decode().split('\0')
+                groups = [line.split(':', 2)[2] for line in (process / 'cgroup').read_text().splitlines()]
+                owners.append((process.name, argv, groups))
+        except (FileNotFoundError, ProcessLookupError):
+            continue
+    return owners
+
+
+def wait_sensors(processors):
+    deadline = time.monotonic() + 45
+    previous = None
+    while True:
+        state = (processors['slpi'] / 'state').read_text().strip()
+        if state != 'running':
+            raise RuntimeError('SLPI stopped during registry readiness: ' + state)
+        owners = sdsp_owners()
+        if len(owners) > 1:
+            raise RuntimeError('multiple SDSP owners; refusing CDSP startup: ' + str(owners))
+        if owners:
+            pid, argv, groups = owners[0]
+            pairs = list(zip(argv, argv[1:]))
+            if (not argv or Path(argv[0]).name != 'xr-hexagonrpcd' or '-s' not in argv or
+                    ('-f', '/dev/fastrpc-sdsp') not in pairs or
+                    ('-R', '/usr/share/qcom/sm8250/iqiyi/vr700') not in pairs or
+                    not any(g.endswith('/vr700-sensors-files.service') for g in groups)):
+                raise RuntimeError('SDSP owner is not the formal sensor service: ' + str(owners))
+        sensors = set()
+        for name in Path('/sys/bus/iio/devices').glob('iio:device*/name'):
+            try:
+                sensors.add(name.read_text().strip())
+            except FileNotFoundError:
+                pass
+        needed = {'qcom-see-accel', 'qcom-see-gyro'}
+        if owners and needed <= sensors:
+            print('SLPI registry readiness: formal SDSP owner and SEE accel/gyro registered', flush=True)
+            return
+        observation = (tuple(owner[0] for owner in owners), tuple(sorted(needed - sensors)))
+        if observation != previous:
+            print('Waiting for SLPI registry: owners=' + str(observation[0]) +
+                  ' missing_sensors=' + str(observation[1]), flush=True)
+            previous = observation
+        if time.monotonic() >= deadline:
+            raise RuntimeError('SLPI registry not ready within45s: ' + str(observation))
+        # Poll actual owner/sensor state; elapsed time alone never means ready.
+        time.sleep(0.2)
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] not in ('slpi', 'cdsp', 'verify', 'check-sdsp-free', 'wait-sensors'):
+        raise RuntimeError('usage: vr700-start-dsp slpi|cdsp|verify|check-sdsp-free|wait-sensors')
+    processors = processors_for_board()
+    phase = sys.argv[1]
+    if phase == 'check-sdsp-free':
+        owners = sdsp_owners()
+        if owners:
+            raise RuntimeError('SDSP already owned; refusing a duplicate resident: ' + str(owners))
+        return
+    if phase in ('wait-sensors', 'cdsp'):
+        wait_sensors(processors)
+        if phase == 'wait-sensors':
+            return
+    if phase == 'verify':
+        for name, entry in processors.items():
+            if (entry / 'state').read_text().strip() != 'running':
+                raise RuntimeError(name + ': not running at startup completion')
+        print('SLPI and CDSP running; sensor/pose acceptance is separate', flush=True)
+        return
+    start_processor(phase, processors[phase])
+    print(phase + ': running', flush=True)
 
 
 if __name__ == '__main__':
