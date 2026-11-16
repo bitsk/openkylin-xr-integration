@@ -5,6 +5,7 @@ ConditionPathExists=/dev/ttyGS0
 
 [Service]
 Type=simple
+ExecStartPre=/usr/bin/stty -F /dev/ttyGS0 -echo -onlcr -ixon
 ExecStart=/bin/bash --noprofile --norc -i
 Restart=always
 RestartSec=1

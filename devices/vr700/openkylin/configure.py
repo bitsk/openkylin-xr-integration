@@ -73,6 +73,8 @@ def main():
         q.symlink_to(target)
 
     shutil.copytree(board / 'overlay', root, dirs_exist_ok=True, symlinks=True)
+    link('etc/systemd/system/multi-user.target.wants/vr700-usb-console.service',
+         '../vr700-usb-console.service')
     module_target = root / 'usr/lib/modules' / a.kernel_release
     if modules.resolve() != module_target.resolve():
         shutil.copytree(modules, module_target, symlinks=True)
