@@ -41,7 +41,7 @@ def main():
         p.error('--offline-chroot applies only to root=/')
     if not root.is_dir() or (root / 'etc/xr-rootfs-id').exists():
         p.error('Use a fresh, inactive extracted root')
-    if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+-xr-vr700(?:-(?:tracking|capabilities))?',
+    if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+-xr-vr700(?:-(?:tracking|capabilities|repair))?',
                         a.kernel_release):
         p.error('Expected the explicit VR700 kernel release')
     release = (root / 'usr/lib/os-release').read_text()
