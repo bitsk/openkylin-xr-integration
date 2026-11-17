@@ -187,10 +187,11 @@ def main():
     write(hand['calibration'], payload, 0o600)
     write(prefix + '/tracking/config6.xml', config6, 0o600)
     write(prefix + '/tracking/config6-cvp-disabled.xml', disabled_config, 0o600)
+    # This SteamVR runtime requires the Vulkan asynchronous compute queue path.
     write(profile['steamvr_settings'], (json.dumps({
         'steamvr': {'forcedDriver': 'monado', 'requireHmd': True,
                     'activateMultipleDrivers': False, 'enableHomeApp': False,
-                    'motionSmoothing': False},
+                    'motionSmoothing': False, 'enableLinuxVulkanAsync': True},
         'driver_monado': {'enable': True}, 'driver_cv': {'enable': False},
         'driver_deckard': {'enable': False}, 'driver_frame_hmd': {'enable': False},
         'driver_frame_controller': {'enable': False}
