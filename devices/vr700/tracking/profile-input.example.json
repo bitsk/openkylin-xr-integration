@@ -139,5 +139,6 @@
     "detector_period": 1.0,
     "vtcm_bytes": 16384
   },
-  "installation_note": "Validate the actual mainline UART node before activation. This input does not assert live tracking or physical coordinate acceptance."
+  "installation_note": "Validate the actual mainline UART node before activation. This input does not assert live tracking or physical coordinate acceptance.",
+  "head_cvp_mode": "disabled"
 }

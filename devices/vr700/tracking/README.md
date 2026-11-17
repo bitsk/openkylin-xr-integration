@@ -175,3 +175,12 @@ empty config directory and renaming the archive back while the listener is
 stopped. Do not overlay directory entries from a tar archive to perform this
 migration. Library/metadata update archives contain only file members under the
 physical `usr/share` and `var/opt` paths.
+
+The default `head_cvp_mode=disabled` selects the original tracker's supported
+`SFConfig.CvpConfig.enable=false` candidate. Preparation verifies the original
+stock XML, inserts only that one element with its original line endings, and
+checks the fixed resulting SHA-256. Both stock and derived XML remain installed;
+VR700 private calibration stays unchanged. This selects the original CPU/DSP
+algorithm branch without CVP work; it neither emulates CVP nor supplies fake
+poses. Deploy the matching head/session digest gates before selecting it;
+VR700 6DoF and wearer validation of this candidate remain pending.

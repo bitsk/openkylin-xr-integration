@@ -61,8 +61,20 @@ def main():
         parser.error('Private VR700 calibration digest mismatch')
     config6 = args.config6.read_bytes()
     config_digest = hashlib.sha256(config6).hexdigest()
-    if config_digest != args.config6_sha256:
+    if config_digest != args.config6_sha256 or config_digest != 'aeef461d9ac5b191f0d2c3e83de3a5d45f305b0f7286c8fc4c5bcecb3b612db9':
         parser.error('VR700 stock head configuration digest mismatch')
+    marker = b'  <SFConfig>\r\n'
+    if config6.count(marker) != 1:
+        parser.error('Expected the single stock SFConfig section')
+    disabled_config = config6.replace(marker, marker + b'    <CvpConfig enable="false" />\r\n', 1)
+    disabled_digest = hashlib.sha256(disabled_config).hexdigest()
+    if disabled_digest != 'f67e7189447212a13b82bb18cc14161221e84d1f36eece205eed6a61ed9be276':
+        parser.error('CVP-disabled variant differs from the fixed single-key transformation')
+    cvp_mode = resources.get('head_cvp_mode', 'disabled')
+    if cvp_mode not in ('stock', 'disabled'):
+        parser.error('Select an explicit stock or disabled CVP mode')
+    selected_digest = disabled_digest if cvp_mode == 'disabled' else config_digest
+    config_name = 'config6-cvp-disabled.xml' if cvp_mode == 'disabled' else 'config6.xml'
     calibration = camera_api.Calibration.load(args.calibration, rig_convention='rig-to-camera')
     if len(calibration.cameras) != 4:
         parser.error('Expected the four actual VR700 camera calibrations')
@@ -122,9 +134,9 @@ def main():
         utilities='/usr/lib/xr/session-manager/utilities',
         head_tracking_plugin='/usr/lib/aarch64-linux-gnu/xr/head-tracking/liba081-qvr-client-live-stream.so',
         controller_plan='/etc/xr/vr700-controller.json', controller_transport=transport,
-        head_tracking=dict(config=prefix + '/tracking/config6.xml',
-            calibration=prefix + '/tracking/input-config/calibration.xml', cvp_mode='stock',
-            config_sha256=config_digest, calibration_sha256=digest),
+        head_tracking=dict(config=prefix + '/tracking/' + config_name,
+            calibration=prefix + '/tracking/input-config/calibration.xml', cvp_mode=cvp_mode,
+            config_sha256=selected_digest, calibration_sha256=digest),
         hand_tracking=dict(enabled=True, runtime_input=True, unit='xr-hand-tracking.service',
                            camera_socket=hand['camera_socket'], state_socket=hand['state_socket']),
         device=dict(id='vr700', compatible='iqiyi,vr700', rootfs_marker='/etc/xr-rootfs-id',
@@ -169,7 +181,8 @@ def main():
     for name, obj in (('vr700-session', profile), ('vr700-controller', controller), ('hand-tracking', hand)):
         write('/etc/xr/' + name + '.json', (json.dumps(obj, indent=2) + '\n').encode())
     write(hand['calibration'], payload, 0o600)
-    write(profile['head_tracking']['config'], config6, 0o600)
+    write(prefix + '/tracking/config6.xml', config6, 0o600)
+    write(prefix + '/tracking/config6-cvp-disabled.xml', disabled_config, 0o600)
     write(profile['steamvr_settings'], (json.dumps({
         'steamvr': {'forcedDriver': 'monado', 'requireHmd': True,
                     'activateMultipleDrivers': False, 'enableHomeApp': False,
@@ -196,7 +209,9 @@ def main():
         (root / Path(sdk_root).relative_to('/') / relative).chmod(0o1777)
     receipt = dict(schema=1, device='vr700', tracking='physical-input-only',
         session_commit=args.session_commit, hand_commit=args.hand_commit,
-        calibration_sha256=digest, config6_sha256=config_digest, calibration_camera_count=4,
+        calibration_sha256=digest, config6_sha256=selected_digest,
+        stock_config6_sha256=config_digest, disabled_config6_sha256=disabled_digest,
+        cvp_mode=cvp_mode, cvp_candidate_hardware_validated=False, calibration_camera_count=4,
         original_hand_assets_checked=bool(args.hand_assets),
         runtime_files=runtime_lock['files'] + runtime_lock['private_sensor_files'], runtime_destinations=runtime_destinations,
         sensor_registry_contents_imported=True, sensor_runtime=runtime_lock['sensor_runtime'],
