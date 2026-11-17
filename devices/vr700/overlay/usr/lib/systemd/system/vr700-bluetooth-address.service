@@ -3,6 +3,7 @@ Description=Configure VR700 factory Bluetooth identity
 After=systemd-udevd.service
 Before=bluetooth.service
 ConditionPathExists=/etc/xr-rootfs-id
+ConditionPathExists=/sys/firmware/devicetree/base/soc@0/geniqup@9c0000/serial@998000/bluetooth
 
 [Service]
 Type=oneshot
