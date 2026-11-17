@@ -100,7 +100,7 @@
       "--root",
       "/opt/xr/vr700/controller-root",
       "--worker",
-      "/opt/xr/vr700/session/controller-sdk-pose",
+      "/usr/lib/aarch64-linux-gnu/xr/controller/controller-sdk-pose",
       "--input-socket",
       "/run/xr-vr700-controller-input-live/input.sock",
       "--output-fd",
