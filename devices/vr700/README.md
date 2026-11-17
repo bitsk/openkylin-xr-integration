@@ -72,3 +72,22 @@ The outer backing filesystem remains mounted below `/run/xr-store`. Failures lea
 a local USB shell and request a normal reboot after two minutes. Recovery image
 installation, full partition readback and the Android return path must be verified
 separately before activating a candidate.
+
+## Bluetooth identity
+
+The board overlay runs `vr700-bluetooth-address.service` before BlueZ. QCA6390
+firmware alone leaves the controller unconfigured when it contains a generic
+address. The helper mounts this device's persist partition read-only with journal
+replay disabled, validates `bluetooth/.bt_nv.bin`, and supplies its factory address
+through the Linux Bluetooth management interface. It verifies the controller's
+actual address before finishing. The address is never included in the package or
+printed to the journal; persist is never modified. Controller enumeration, radio
+power/discovery, pairing and audio are separate validation stages. The model
+overlay also enables the UKUI Bluetooth switch by default, so its system service
+and the desktop use the same initial power policy. Explicit user settings still
+take precedence.
+
+The tracking capsule selects bounded OV7251 startup exposure convergence. Its
+transient measurement frames remain on the device and are removed after each
+epoch. The final producer uses fixed read-back controls and the corresponding
+exposure timestamps. Tracking quality remains the original algorithm's result.
