@@ -6,6 +6,7 @@ import configparser
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import shlex
 import xml.etree.ElementTree as ET
@@ -40,7 +41,8 @@ def main():
         p.error('--offline-chroot applies only to root=/')
     if not root.is_dir() or (root / 'etc/xr-rootfs-id').exists():
         p.error('Use a fresh, inactive extracted root')
-    if '/' in a.kernel_release or not a.kernel_release.endswith('-xr-vr700'):
+    if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+-xr-vr700(?:-(?:tracking|capabilities))?',
+                        a.kernel_release):
         p.error('Expected the explicit VR700 kernel release')
     release = (root / 'usr/lib/os-release').read_text()
     if 'ID=openkylin' not in release or 'VERSION_ID="3.0"' not in release:
