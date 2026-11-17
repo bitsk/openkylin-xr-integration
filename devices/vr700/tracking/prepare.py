@@ -140,7 +140,7 @@ def main():
         controller_plan='/etc/xr/vr700-controller.json', controller_transport=transport,
         head_tracking=dict(config=prefix + '/tracking/' + config_name,
             calibration=prefix + '/tracking/input-config/calibration.xml', cvp_mode=cvp_mode,
-            config_sha256=selected_digest, calibration_sha256=digest),
+            config_sha256=selected_digest, calibration_sha256=digest, startup_ae='stock-ov7251'),
         hand_tracking=dict(enabled=True, runtime_input=True, unit='xr-hand-tracking.service',
                            camera_socket=hand['camera_socket'], state_socket=hand['state_socket']),
         device=dict(id='vr700', compatible='iqiyi,vr700', rootfs_marker='/etc/xr-rootfs-id',

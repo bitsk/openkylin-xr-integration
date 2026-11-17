@@ -1,0 +1,118 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Configure the QCA6390 with this VR700's read-only factory identity."""
+import ctypes
+from pathlib import Path
+import socket
+import struct
+import subprocess
+import tempfile
+import time
+
+
+def command(sock, opcode, index=0xffff, payload=b''):
+    sock.sendall(struct.pack('<HHH', opcode, index, len(payload)) + payload)
+    deadline = time.monotonic() + 3
+    while time.monotonic() < deadline:
+        data = sock.recv(4096)
+        if len(data) < 6:
+            raise RuntimeError('Short Bluetooth management event')
+        event, target, length = struct.unpack_from('<HHH', data)
+        if len(data) != 6 + length:
+            raise RuntimeError('Invalid Bluetooth management event length')
+        if target != index or event not in (1, 2):
+            continue
+        if event == 1 and length >= 3:
+            completed, status = struct.unpack_from('<HB', data, 6)
+            result = data[9:]
+        elif event == 2 and length == 3:
+            status, completed = struct.unpack_from('<BH', data, 6)
+            result = b''
+        else:
+            raise RuntimeError('Invalid Bluetooth command response')
+        if completed != opcode:
+            continue
+        if status:
+            raise RuntimeError(f'Bluetooth management command {opcode:#x}: status {status:#x}')
+        return result
+    raise TimeoutError('Bluetooth management response timeout')
+
+
+def indexes(sock, opcode):
+    data = command(sock, opcode)
+    if len(data) < 2:
+        raise RuntimeError('Short Bluetooth index list')
+    count, = struct.unpack_from('<H', data)
+    if len(data) != 2 + count * 2:
+        raise RuntimeError('Invalid Bluetooth index list')
+    return struct.unpack_from('<' + 'H' * count, data, 2)
+
+
+def factory_address():
+    # Mount in a private namespace (the service has PrivateMounts=yes), and
+    # suppress ext4 journal replay. Never modify persist or cache its address
+    # in a public image. Qualcomm NV item 1 has a three-byte item/protection/
+    # length header followed by the six little-endian BD_ADDR bytes.
+    with tempfile.TemporaryDirectory(prefix='vr700-bt-', dir='/run') as name:
+        subprocess.run(['mount', '-t', 'ext4', '-o', 'ro,noload',
+                        '/dev/disk/by-partlabel/persist', name], check=True)
+        try:
+            record = (Path(name) / 'bluetooth/.bt_nv.bin').read_bytes()
+        finally:
+            subprocess.run(['umount', name], check=True)
+    if len(record) != 9 or record[:3] != b'\x01\x01\x06':
+        raise RuntimeError('Unsupported factory Bluetooth NV record')
+    address = record[3:]
+    if address in (b'\x00' * 6, b'\xff' * 6):
+        raise RuntimeError('Empty factory Bluetooth address')
+    return address
+
+
+def main():
+    if b'iqiyi,vr700' not in Path('/sys/firmware/devicetree/base/compatible').read_bytes().split(b'\0'):
+        raise RuntimeError('VR700 device required')
+    libc = ctypes.CDLL(None, use_errno=True)
+    with socket.socket(socket.AF_BLUETOOTH, socket.SOCK_RAW, socket.BTPROTO_HCI) as sock:
+        sock.settimeout(3)
+        control = ctypes.create_string_buffer(struct.pack('<HHH', socket.AF_BLUETOOTH, 0xffff, 3))
+        if libc.bind(sock.fileno(), control, 6):
+            raise OSError(ctypes.get_errno(), 'Bluetooth management bind')
+        deadline = time.monotonic() + 20
+        while True:
+            configured = indexes(sock, 0x0003)
+            unconfigured = indexes(sock, 0x0036)
+            candidates = [index for index in (*configured, *unconfigured)
+                          if (Path(f'/sys/class/bluetooth/hci{index}/device/of_node/compatible').read_bytes()
+                              .split(b'\0')[0] == b'qcom,qca6390-bt')]
+            if candidates:
+                break
+            if time.monotonic() >= deadline:
+                raise TimeoutError('QCA6390 controller did not appear')
+            time.sleep(.1)
+        if len(candidates) != 1:
+            raise RuntimeError('Expected one QCA6390 controller')
+        index = candidates[0]
+        address = factory_address()
+        if index in unconfigured:
+            info = command(sock, 0x0037, index)
+            if len(info) != 10:
+                raise RuntimeError('Invalid Bluetooth configuration information')
+            manufacturer, supported, missing = struct.unpack('<HII', info)
+            if manufacturer != 29 or not supported & 2 or missing != 2:
+                raise RuntimeError('Unexpected controller configuration requirements')
+            command(sock, 0x0039, index, address)
+        # Configuration queues initialization asynchronously. Verify the
+        # controller's actual address before allowing BlueZ to use it.
+        deadline = time.monotonic() + 8
+        while index not in indexes(sock, 0x0003):
+            if time.monotonic() >= deadline:
+                raise TimeoutError('Bluetooth controller remained unconfigured')
+            time.sleep(.1)
+        info = command(sock, 0x0004, index)
+        if len(info) < 6 or info[:6] != address:
+            raise RuntimeError('Bluetooth factory identity readback mismatch')
+    print('VR700 factory Bluetooth address verified; controller configured')
+
+
+if __name__ == '__main__':
+    main()

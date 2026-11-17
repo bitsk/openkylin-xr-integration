@@ -1,3 +1,9 @@
+openkylin-xr-integration (0.1.9) unstable; urgency=medium
+
+  * Configure VR700 factory Bluetooth identity and head-camera startup exposure.
+
+ -- bits <bigbits@hackx.cc>  Tue, 17 Nov 2026 20:22:05 +0800
+
 openkylin-xr-integration (0.1.8) unstable; urgency=medium
 
   * Close native desktop dependencies and pin the upstream loader import.
