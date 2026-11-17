@@ -107,6 +107,8 @@ def main():
             controller['camera_env'].get('A081_CONTROLLER_EXPOSURE_PROFILE') == 'kernel-three-phase'):
         parser.error('Free-running capture cannot use the MIX external-FSIN AE/three-phase protocol')
     hand = dict(resources['hand_tracking'])
+    if hand.get('camera_exposure_profile') != 'vr700-fixed-controls-v1':
+        parser.error('VR700 hand input requires the explicit fixed-controls exposure profile')
     hand.update(schema=1, backend='quest-dsp',
                 calibration=prefix + '/tracking/input-config/calibration.xml',
                 rpc_daemon='/usr/bin/xr-hexagonrpcd',
@@ -216,6 +218,7 @@ def main():
         runtime_files=runtime_lock['files'] + runtime_lock['private_sensor_files'], runtime_destinations=runtime_destinations,
         sensor_registry_contents_imported=True, sensor_runtime=runtime_lock['sensor_runtime'],
         camera_synchronization=rig['synchronization'],
+        hand_camera_exposure_profile=hand['camera_exposure_profile'],
         shared_camera_owner='head producer; hand and controller consumers subscribe',
         controller_transport=transport, services_started=False,
         hardware_tracking_validated=False, physical_wearer_validated=False)

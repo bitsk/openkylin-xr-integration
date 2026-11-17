@@ -133,6 +133,7 @@
     ]
   },
   "hand_tracking": {
+    "camera_exposure_profile": "vr700-fixed-controls-v1",
     "assets": "/var/lib/xr-hand-tracking/vr700/quest",
     "runtime_root": "/opt/xr/vr700/session/tracking/stock-runtime/qcom",
     "threads": 2,

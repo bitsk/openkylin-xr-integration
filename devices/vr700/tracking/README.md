@@ -184,3 +184,8 @@ VR700 private calibration stays unchanged. This selects the original CPU/DSP
 algorithm branch without CVP work; it neither emulates CVP nor supplies fake
 poses. Deploy the matching head/session digest gates before selecting it;
 VR700 6DoF and wearer validation of this candidate remain pending.
+
+The explicit hand `camera_exposure_profile=vr700-fixed-controls-v1` consumes
+VR700 fixed controls with the original phase-NONE metadata; deploy matching
+device I/O, head producer and hand consumer packages together. It does not claim
+the MIX three-phase exposure schedule or positive hand-tracking acceptance.
