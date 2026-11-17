@@ -11,7 +11,9 @@ StartLimitBurst=3
 Type=exec
 ExecStartPre=/usr/libexec/vr700-start-dsp check-sdsp-free
 ExecStartPre=/usr/sbin/modprobe qcom-see
-ExecStart=/usr/bin/xr-hexagonrpcd -f /dev/fastrpc-sdsp -d slpi -s -R /usr/share/qcom/sm8250/iqiyi/vr700
+# Resident startup serves registry/board files with the validated default library
+# mapping. The session-owned low-latency IMU listener separately keeps -d slpi.
+ExecStart=/usr/bin/xr-hexagonrpcd -f /dev/fastrpc-sdsp -s -R /usr/share/qcom/sm8250/iqiyi/vr700
 ExecStartPost=/usr/libexec/vr700-start-dsp wait-sensors
 TimeoutStartSec=60
 Restart=on-failure
