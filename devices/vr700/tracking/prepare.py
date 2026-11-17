@@ -51,6 +51,8 @@ def main():
     resources = json.loads(args.private_input.read_text())
     if resources.get('device') != 'vr700':
         parser.error('Private resources must explicitly identify VR700')
+    if resources.get('display_topology', 'unified') != 'unified':
+        parser.error('VR700 requires the unified msm display topology')
     device_api = source_module(args.session_source, args.session_commit,
                                'src/device_profile.py', 'vr700_device_profile')
     camera_api = source_module(args.hand_source, args.hand_commit,
@@ -129,7 +131,7 @@ def main():
         service_api.verified_assets(args.hand_assets)
     profile = dict(format='qiyu-vr-session-profile-v1', id='vr700-openkylin-xr',
         user='xr', uid=1000, gid=1000, home='/home/xr',
-        rootfs_id='vr700-openkylin-3.0-arm64', prefix=prefix,
+        rootfs_id='vr700-openkylin-3.0-arm64', prefix=prefix, display_topology='unified',
         runtime_directory='/run/xr-vr700-session', unit='xr-vr700.service',
         tracking_unit='xr-vr700-tracking.service', desktop_unit='lightdm.service',
         viewer_unit='', sensor_consumers=['iio-sensor-proxy.service'],
@@ -210,6 +212,7 @@ def main():
     for relative in ('tmp', 'data/local/tmp'):
         (root / Path(sdk_root).relative_to('/') / relative).chmod(0o1777)
     receipt = dict(schema=1, device='vr700', tracking='physical-input-only',
+        display_topology=profile['display_topology'],
         session_commit=args.session_commit, hand_commit=args.hand_commit,
         calibration_sha256=digest, config6_sha256=selected_digest,
         stock_config6_sha256=config_digest, disabled_config6_sha256=disabled_digest,

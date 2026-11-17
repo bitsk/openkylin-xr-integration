@@ -1,5 +1,6 @@
 {
   "device": "vr700",
+  "display_topology": "unified",
   "kernel_releases": [
     "7.3.0-xr-vr700-tracking"
   ],
