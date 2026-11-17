@@ -83,9 +83,12 @@ through the Linux Bluetooth management interface. It verifies the controller's
 actual address before finishing. The address is never included in the package or
 printed to the journal; persist is never modified. Controller enumeration, radio
 power/discovery, pairing and audio are separate validation stages. The model
-overlay also enables the UKUI Bluetooth switch by default, so its system service
-and the desktop use the same initial power policy. Explicit user settings still
-take precedence.
+overlay initializes `/etc/bluetooth/ukui-bluetooth.conf` with the Bluetooth
+switch enabled. The installed UKUI service uses this INI setting for its power
+policy. For an existing installation, enable it through
+`com.ukui.bluetooth.setDefaultAdapterAttr` with `Powered=true`, which updates
+the service state and its persisted configuration together. Subsequent user
+changes remain under UKUI control.
 
 The tracking capsule selects bounded OV7251 startup exposure convergence. Its
 transient measurement frames remain on the device and are removed after each
