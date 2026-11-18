@@ -42,11 +42,10 @@ def main():
 </vector>''')
         manifest = work / 'AndroidManifest.xml'
         manifest.write_text(f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android"
- package="com.bits.qiyu.boot.{target}" android:versionCode="1" android:versionName="1.0">
+ package="com.bits.qiyu.boot.{target}" android:versionCode="2" android:versionName="1.1">
  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="29"/>
  <application android:label="进入 {label}" android:icon="@drawable/icon"
  android:allowBackup="false" android:theme="@android:style/Theme.Material.NoActionBar">
- <meta-data android:name="qiyu-sdk-flag" android:value="true"/>
  <activity android:name="com.bits.qiyu.boot.BootActivity" android:exported="true"
  android:screenOrientation="landscape">
  <intent-filter><action android:name="android.intent.action.MAIN"/>

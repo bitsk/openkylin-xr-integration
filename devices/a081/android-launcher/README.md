@@ -14,9 +14,12 @@ python3 build.py --sdk /path/to/android-sdk --output /private/build/launchers
 ```
 
 The outputs are unsigned APKs. Align and sign them with a private, stable
-keystore before installation. Application-level `qiyu-sdk-flag=true` makes each
-package discoverable by Qiyu Home. No Qiyu Home launcher action or legacy QTI
-category is added.
+keystore before installation. These are ordinary 2D Android activities: Qiyu
+Home hosts a single confirmation page in its VR window and supplies controller
+ray clicks as Android touch events. Do not add `qiyu-sdk-flag` or draw separate
+eye panes: marking this non-SDK activity as a native VR application bypasses
+that window input path and leaves its buttons inaccessible to the controller.
+No Qiyu Home launcher action or legacy QTI category is added.
 
 On a rooted A081 Android B installation, install `control.sh` root-owned mode
 0700 at `/data/adb/qiyu-boot/control.sh`. Supply a root-owned mode 0600
