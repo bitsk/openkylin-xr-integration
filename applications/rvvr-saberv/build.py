@@ -54,6 +54,16 @@ def main():
                             'textures/vram_compression/import_s3tc_bptc=false')
         p.write_text(text)
     engine = output / 'engine'
+    if not (engine / 'root/godot-native').is_file() and os.environ.get('XR_GODOT_ENGINE_CACHE'):
+        # Reuse only a checksummed result of this same locked engine recipe.
+        cache = Path(os.environ['XR_GODOT_ENGINE_CACHE'])
+        saved = json.loads((cache / 'build-manifest.json').read_text())
+        current = json.loads((args.sources / 'xr-monado/compat/native-interop/godot-engine/upstream.json').read_text())
+        if (saved['upstream'] != current['commit'] or saved['patches'] != current['patches'] or
+                saved['archive_sha256'] != current['archive_sha256'] or
+                sha(cache / 'godot-native') != saved['binary_sha256']):
+            raise ValueError('Cached engine does not match the selected source recipe')
+        shutil.copytree(cache, engine / 'root')
     if not (engine / 'root/godot-native').is_file():
         argv = [sys.executable, args.sources / 'xr-monado/compat/native-interop/godot-engine/build.py',
                 '--archive', os.environ['XR_GODOT_ARCHIVE'], '--output', engine,

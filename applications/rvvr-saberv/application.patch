@@ -105,9 +105,9 @@ index a8f280e..8e0c5b9 100644
  func _on_Exit_Button_pressed() -> void:
  	close.emit()
 +
-+func _exit_tree() -> void:
-+	# The duplicated row is a template outside the scene tree.
-+	if is_instance_valid(_base_row):
++func _notification(what: int) -> void:
++	# Reparenting the UI canvas is not destruction of its template.
++	if what == NOTIFICATION_PREDELETE and is_instance_valid(_base_row):
 +		_base_row.free()
 diff --git a/game/HighscorePanel.tscn b/game/HighscorePanel.tscn
 index 8ccb899..94f56d9 100644
