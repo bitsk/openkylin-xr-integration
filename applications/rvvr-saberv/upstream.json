@@ -1,0 +1,14 @@
+{
+  "repository": "https://gitee.com/openkylin/rvvr-saberv.git",
+  "commit": "127977c3384a59fad5fe827e3e95c26fc397f082",
+  "sample_repository": "https://gitee.com/DSOE1024/rvvr-saber-v-selected-songs.git",
+  "sample_commit": "9262910079385c1954abe1be34029f79f60880d4",
+  "editor_url": "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip",
+  "editor_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+  "sample_files": {
+    "EasyStandard.dat": "95d66c5cb5f52e2c6cbcafb2151a564e2ba06ef46a9ba2f3512333f847d06ab8",
+    "song_q1.egg": "303f764b259f309f9deb1ac077524b1a4995afd7b691cd48c194fd8fb7606c16",
+    "info.dat": "ebbdb6bb20adbf324b35e2f2ac6817008332ccb67489aaa6bdaecabb31b5e495",
+    "cover.jpg": "b6dd074368fe3975f1828281c268f6297edd879a2bf9d24693d12c7de1f68d81"
+  }
+}

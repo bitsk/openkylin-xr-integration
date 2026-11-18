@@ -1,0 +1,273 @@
+diff --git a/OQ_Toolkit/vr_autoload.gd b/OQ_Toolkit/vr_autoload.gd
+index 98ae352..9ac15f9 100644
+--- a/OQ_Toolkit/vr_autoload.gd
++++ b/OQ_Toolkit/vr_autoload.gd
+@@ -216,6 +216,8 @@ func initialize(origin: XROrigin3D, camera: XRCamera3D, left_hand: BeepSaberCont
+ 	if xr_interface: xr_interface.render_target_size_multiplier = render_scale
+ 	if xr_interface and xr_interface.is_initialized():
+ 		log_info("OpenXR initialised successfully")
++		if xr_interface.has_signal("session_exiting"):
++			xr_interface.connect("session_exiting", get_tree().quit)
+ 		if xr_interface.has_method(&"get_available_display_refresh_rates"):
+ 			var fps : Array = xr_interface.get_available_display_refresh_rates()
+ 			log_info("avaliable fps: "+str(fps))
+@@ -236,3 +238,6 @@ func initialize(origin: XROrigin3D, camera: XRCamera3D, left_hand: BeepSaberCont
+ 	else:
+ 		log_info("OpenXR not initialized, please check if your headset is connected")
+ 		inVR = false
++		if OS.get_environment("RVVR_REQUIRE_XR") == "1":
++			push_error("SaberV native session requires OpenXR")
++			get_tree().quit(2)
+diff --git a/export_presets.cfg b/export_presets.cfg
+index 79d59c5..5888c24 100644
+--- a/export_presets.cfg
++++ b/export_presets.cfg
+@@ -85,3 +85,19 @@ unzip -o -q \"{temp_dir}/{archive_name}\" -d \"{temp_dir}\"
+ ssh_remote_deploy/cleanup_script="#!/usr/bin/env bash
+ kill $(pgrep -x -f \"{temp_dir}/{exe_name} {cmd_args}\")
+ rm -rf \"{temp_dir}\""
++
++
++[preset.2]
++name="MIX openKylin ARM64"
++platform="Linux"
++runnable=true
++export_filter="all_resources"
++include_filter="*.dat,*.json,*.egg,*.html,*.css"
++exclude_filter="addons/deb_packager/*,mix/*,game/data/maps/Songs/*,game/BeepCube/BeepCubeTest.tscn"
++export_path="../rvvr-saberv-package/SaberV.pck"
++script_export_mode=0
++
++[preset.2.options]
++binary_format/architecture="arm64"
++texture_format/s3tc_bptc=false
++texture_format/etc2_astc=true
+diff --git a/game/BeepSaberMainMenu.gd b/game/BeepSaberMainMenu.gd
+index 14a12a5..cabf9db 100644
+--- a/game/BeepSaberMainMenu.gd
++++ b/game/BeepSaberMainMenu.gd
+@@ -67,8 +67,7 @@ func compare(a: MapInfoWithSort, b: MapInfoWithSort) -> bool:
+ 
+ func _load_playlists() -> void:
+ 	#copy sample songs to main playlist folder on first run
+-	const config_path := "user://config.dat"
+-	if not FileAccess.file_exists(config_path):
++	if not DirAccess.dir_exists_absolute(Constants.APPDATA_PATH+"Songs/"):
+ 		@warning_ignore("return_value_discarded")
+ 		DirAccess.make_dir_recursive_absolute(Constants.APPDATA_PATH+"Songs/")
+ 		const maps_path := "res://game/data/maps/"
+@@ -321,8 +320,7 @@ func _select_song(id: int) -> void :
+ 	# 获取音频长度
+ 	var total_seconds: float = 0
+ 	var sf_path = map.filepath + map.song_filename
+-	var audio_stream = ResourceLoader.load(sf_path, "AudioStream", ResourceLoader.CACHE_MODE_REUSE)
+-	
++
+ 	var buffer = FileAccess.get_file_as_bytes(map.filepath + map.song_filename)
+ 	var stream: AudioStream
+ 	# 根据后缀判断格式
+@@ -531,7 +529,7 @@ func _on_Search_Button_button_up() -> void:
+ 	keyboard.visible=true
+ 	keyboard._text_edit.grab_focus()
+ 
+-func _text_input_enter(_text: String) -> void:
++func _text_input_enter(_text: String = "") -> void:
+ 	keyboard.visible=false
+ 
+ func _text_input_cancel() -> void:
+@@ -572,3 +570,8 @@ func _on_PlaylistSelector_item_selected(id: int) -> void:
+ 		_:
+ 			vr.log_warning("Unsupported playlist option %s" % id)
+ 			_set_cur_playlist(_all_songs)
++
++
++func _exit_tree() -> void:
++	# Cover workers must finish before their UI callbacks lose their owner.
++	Utils.finish_pending_threads()
+diff --git a/game/BeepSaber_Game.gd b/game/BeepSaber_Game.gd
+index 871b923..2f8c643 100644
+--- a/game/BeepSaber_Game.gd
++++ b/game/BeepSaber_Game.gd
+@@ -44,7 +44,6 @@ var gamestate: GameState = gamestate_bootup
+ @onready var map_source_dialogs := $MapSourceDialogs as Node3D
+ @onready var online_search_keyboard := $Keyboard_online_search as OQ_UI2DKeyboard
+ 
+-@onready var cube_template := preload("res://game/BeepCube/BeepCube.tscn").instantiate() as BeepCube
+ 
+ @onready var track := $Track as Node3D
+ @onready var standing_ground := $StandingGround as Floor
+diff --git a/game/HighscorePanel.gd b/game/HighscorePanel.gd
+index a8f280e..8e0c5b9 100644
+--- a/game/HighscorePanel.gd
++++ b/game/HighscorePanel.gd
+@@ -61,3 +61,8 @@ func _get_difficulty_name(map_info: MapInfo, diff_rank: int) -> String:
+ 
+ func _on_Exit_Button_pressed() -> void:
+ 	close.emit()
++
++func _exit_tree() -> void:
++	# The duplicated row is a template outside the scene tree.
++	if is_instance_valid(_base_row):
++		_base_row.free()
+diff --git a/game/HighscorePanel.tscn b/game/HighscorePanel.tscn
+index 8ccb899..94f56d9 100644
+--- a/game/HighscorePanel.tscn
++++ b/game/HighscorePanel.tscn
+@@ -2,7 +2,7 @@
+ 
+ [ext_resource type="Theme" uid="uid://dvcjel72een6o" path="res://OQ_Toolkit/OQ_UI2D/theme/oq_ui2d_standard.theme" id="1"]
+ [ext_resource type="Script" uid="uid://r8b4cf5qx2ch" path="res://game/HighscorePanel.gd" id="2"]
+-[ext_resource type="Texture2D" uid="uid://j1wa4gcqkltx" path="res://game/data/maps/Songs/TheFatRat_Timelapse/cover.jpg" id="4"]
++[ext_resource type="Texture2D" path="res://game/data/game_logo.png" id="4"]
+ 
+ [sub_resource type="StyleBoxFlat" id="1"]
+ bg_color = Color(0, 0, 0, 1)
+diff --git a/game/data/background/endpath.obj b/game/data/background/endpath.obj
+index fd4cd96..4ece8ec 100644
+--- a/game/data/background/endpath.obj
++++ b/game/data/background/endpath.obj
+@@ -1,6 +1,6 @@
+ # Blender 3.6.0
+ # www.blender.org
+-mtllib endpath.mtl.mtl
++mtllib endpath.mtl
+ o Plane
+ v -10.000000 1.981084 0.296609
+ v 10.000000 0.000000 1.000000
+diff --git a/game/scripts/BackgroundImgLoader.gd b/game/scripts/BackgroundImgLoader.gd
+index bd19b07..8a694b6 100644
+--- a/game/scripts/BackgroundImgLoader.gd
++++ b/game/scripts/BackgroundImgLoader.gd
+@@ -1,4 +1,4 @@
+-extends Object
++extends RefCounted
+ 
+ class ImgLoadRequest:
+ 	extends RefCounted
+diff --git a/game/scripts/GameState/GameState.gd b/game/scripts/GameState/GameState.gd
+index 8558306..8e1b9db 100644
+--- a/game/scripts/GameState/GameState.gd
++++ b/game/scripts/GameState/GameState.gd
+@@ -1,4 +1,4 @@
+-extends Object
++extends RefCounted
+ class_name GameState
+ 
+ @warning_ignore("unused_parameter")
+diff --git a/game/scripts/SwingableRayCast/SwingableRayCast.gd b/game/scripts/SwingableRayCast/SwingableRayCast.gd
+index 6d2f236..8cf50e6 100644
+--- a/game/scripts/SwingableRayCast/SwingableRayCast.gd
++++ b/game/scripts/SwingableRayCast/SwingableRayCast.gd
+@@ -49,7 +49,7 @@ func _ready() -> void:
+ 			_debug_curr_balls.append(new_ball)
+ 	
+ 	# no longer need original instance
+-	remove_child($debug_ball)
++	$debug_ball.queue_free()
+ 
+ # override so that we can update child segments too
+ func _set_collision_mask_value(bit: int, value: bool) -> void:
+diff --git a/game/scripts/Utils.gd b/game/scripts/Utils.gd
+index 66298bb..03bbeb9 100644
+--- a/game/scripts/Utils.gd
++++ b/game/scripts/Utils.gd
+@@ -76,3 +76,11 @@ func custom_thread_call(thread : Thread, function : Callable, params := []):
+ 	else:
+ 		thread_finished.append(thread)
+ 		return thread.start(function.bindv(params))
++
++
++func finish_pending_threads() -> void:
++	while not thread_finished.is_empty():
++		var thread: Thread = thread_finished.pop_front()
++		if thread.is_started():
++			thread.wait_to_finish()
++	fake_thread_finished.clear()
+diff --git a/game/ui/NameSelector/NameSelector.gd b/game/ui/NameSelector/NameSelector.gd
+index 499cc7a..c192534 100644
+--- a/game/ui/NameSelector/NameSelector.gd
++++ b/game/ui/NameSelector/NameSelector.gd
+@@ -3,7 +3,6 @@ class_name NameSelector
+ 
+ #signal name_selected(name: String)
+ 
+-@onready var _base_button := Button.new()
+ @onready var _name_row := $NameRow as HBoxContainer
+ 
+ func _ready() -> void:
+@@ -12,7 +11,7 @@ func _ready() -> void:
+ # adds a name button to the list
+ # names that are added first show up first in list
+ func add_name(name: String) -> void:
+-	var new_button := _base_button.duplicate() as Button
++	var new_button := Button.new()
+ 	new_button.text = name
+ 	new_button.pressed.connect(_on_NameButton_pressed.bind(name))
+ 	_name_row.add_child(new_button)
+diff --git a/project.godot b/project.godot
+index 9a72568..8a588b4 100644
+--- a/project.godot
++++ b/project.godot
+@@ -12,12 +12,14 @@ config_version=5
+ 
+ config/name="RVVR SaberV"
+ config/description="RVVR SaberV"
+-config/version="0.0.1-ok1"
++config/version="0.0.1-ok1+mix1"
++config/use_custom_user_dir=true
++config/custom_user_dir_name="rvvr-saberv"
+ run/main_scene="res://scenes/rvvr_saberv_main.tscn"
+-config/features=PackedStringArray("4.4")
++config/features=PackedStringArray("4.7", "Mobile")
+ boot_splash/bg_color=Color(0, 0, 0, 1)
+-boot_splash/image="uid://c84n654p0i67v"
+-config/icon="uid://pn7qnommtvvj"
++boot_splash/image="res://arts/ok_logo.png"
++config/icon="res://arts/ok_logo.png"
+ 
+ [audio]
+ 
+@@ -55,16 +57,12 @@ window/vsync/vsync_mode=false
+ 
+ [editor_plugins]
+ 
+-enabled=PackedStringArray("res://addons/deb_packager/plugin.cfg", "res://addons/stopwatch/plugin.cfg")
++enabled=PackedStringArray("res://addons/stopwatch/plugin.cfg")
+ 
+ [filesystem]
+ 
+ import/blender/enabled=false
+ 
+-[gdnative]
+-
+-singletons=["res://addons/godot-openxr/config/godot_openxr.gdnlib"]
+-
+ [importer_defaults]
+ 
+ texture={
+@@ -142,13 +140,14 @@ locale/translations=PackedStringArray("res://i18n/i18n.zh.translation", "res://i
+ [physics]
+ 
+ common/physics_jitter_fix=0.0
+-3d/physics_engine="Bullet"
+-common/physics_fps=72
++3d/physics_engine="GodotPhysics3D"
++common/physics_ticks_per_second=72
+ 
+ [rendering]
+ 
+ renderer/rendering_method="mobile"
+ textures/vram_compression/import_etc2_astc=true
++textures/vram_compression/import_s3tc_bptc=false
+ shading/overrides/force_lambert_over_burley=true
+ environment/defaults/default_clear_color=Color(0, 0, 0, 1)
+ anti_aliasing/quality/use_debanding=true
+@@ -180,4 +179,8 @@ right_saber={
+ openxr/enabled=true
+ openxr/reference_space=2
+ openxr/startup_alert=false
++openxr/headset_only=true
++openxr/foveation_level=0
++openxr/foveation_dynamic=false
++openxr/foveation_with_subsampled_images=false
+ shaders/enabled=true
