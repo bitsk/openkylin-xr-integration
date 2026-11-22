@@ -356,7 +356,7 @@ index 499cc7a..c192534 100644
  	new_button.pressed.connect(_on_NameButton_pressed.bind(name))
  	_name_row.add_child(new_button)
 diff --git a/project.godot b/project.godot
-index 9a72568..922770d 100644
+index 9a72568..382d9f6 100644
 --- a/project.godot
 +++ b/project.godot
 @@ -12,12 +12,14 @@ config_version=5
@@ -364,7 +364,7 @@ index 9a72568..922770d 100644
  config/name="RVVR SaberV"
  config/description="RVVR SaberV"
 -config/version="0.0.1-ok1"
-+config/version="0.0.1-ok1+mix10"
++config/version="0.0.1-ok1+mix11"
 +config/use_custom_user_dir=true
 +config/custom_user_dir_name="rvvr-saberv"
  run/main_scene="res://scenes/rvvr_saberv_main.tscn"
@@ -538,10 +538,16 @@ index 428747f..1e887ca 100644
  func _on_AnimationPlayer_animation_started(_anim_name: StringName) -> void:
  	_swing_cast.adjust_segments = true
 diff --git a/game/scripts/UIRaycast/UIRaycast.gd b/game/scripts/UIRaycast/UIRaycast.gd
-index 844799c..f091c30 100644
+index 844799c..7748cba 100644
 --- a/game/scripts/UIRaycast/UIRaycast.gd
 +++ b/game/scripts/UIRaycast/UIRaycast.gd
-@@ -10,6 +10,8 @@ class_name UIRaycast
+@@ -5,11 +5,14 @@ class_name UIRaycast
+ @export var ui_raycast_length := 3.0
+ @export var ui_mesh_length := 1.0
+ @export var controller: BeepSaberController
++@export var saber: LightSaber
+ 
+ @onready var ui_raycast := $RayCastPosition/RayCast3D as RayCast3D
  @onready var ui_raycast_mesh := $RayCastPosition/RayCastMesh as MeshInstance3D
  @onready var ui_raycast_hitmarker := $RayCastPosition/RayCastHitMarker as MeshInstance3D
  
@@ -550,7 +556,7 @@ index 844799c..f091c30 100644
  var is_colliding := false;
  var colliding_with: Object = null
  
-@@ -49,5 +51,27 @@ func _ready() -> void:
+@@ -49,5 +52,38 @@ func _ready() -> void:
  
  # we use the physics process here be in sync with the controller position
  func _physics_process(_dt: float) -> void:
@@ -567,6 +573,8 @@ index 844799c..f091c30 100644
 +	is_colliding = false
 +
 +func _update_openxr_aim() -> bool:
++	if not controller.get_has_tracking_data() or not saber.is_visible_in_tree():
++		return false
 +	var hand := XRServer.get_tracker(controller.tracker) as XRPositionalTracker
 +	var aim := hand.get_pose(&"aim") if hand else null
 +	if not aim or not aim.has_tracking_data or aim.tracking_confidence == XRPose.XR_TRACKING_CONFIDENCE_NONE:
@@ -574,39 +582,62 @@ index 844799c..f091c30 100644
 +	var aim_transform := aim.get_adjusted_transform()
 +	if not aim_transform.is_finite():
 +		return false
-+	global_transform = (controller.get_parent_node_3d().global_transform * aim_transform)
++	# Keep the runtime aim basis while starting both the mesh and cast at the visible hilt.
++	var ray_pose := controller.get_parent_node_3d().global_transform * aim_transform
++	var runtime_aim_origin := ray_pose.origin
++	var hilt_origin := saber.saber_visual.hilt.global_position
++	ray_pose.origin = hilt_origin
++	global_transform = ray_pose
 +	if not _reported_aim:
-+		print("SABERV_AIM ", String(controller.tracker), " forward=-Z")
++		print("SABERV_AIM ", String(controller.tracker), " forward=-Z ", JSON.stringify({
++			"aim_to_hilt_m": runtime_aim_origin.distance_to(hilt_origin),
++			"hit_ray_origin_error_m": ui_raycast.global_position.distance_to(hilt_origin),
++			"draw_ray_origin_error_m": ui_raycast_mesh.to_global(Vector3(0, 0, ui_mesh_length * 0.5)).distance_to(hilt_origin)
++		}))
 +		_reported_aim = true
 +	return true
 diff --git a/scenes/rvvr_saberv_main.tscn b/scenes/rvvr_saberv_main.tscn
-index 5ca790c..daa468b 100644
+index 5ca790c..5361eec 100644
 --- a/scenes/rvvr_saberv_main.tscn
 +++ b/scenes/rvvr_saberv_main.tscn
-@@ -160,11 +160,10 @@ script = ExtResource("11_b2bxw")
+@@ -160,11 +160,11 @@ script = ExtResource("11_b2bxw")
  [node name="LeftLightSaber" parent="XROrigin3D/LeftController" node_paths=PackedStringArray("song_player_ref") instance=ExtResource("12_bp2w7")]
  song_player_ref = NodePath("../../../SongPlayer")
  
 -[node name="UIRaycast" parent="XROrigin3D/LeftController/LeftLightSaber" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
 -transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
-+[node name="UIRaycast" parent="XROrigin3D/LeftController" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
++[node name="UIRaycast" parent="XROrigin3D/LeftController" node_paths=PackedStringArray("controller", "saber") instance=ExtResource("13_o0ale")]
  active = false
  ui_raycast_length = 5.0
 -controller = NodePath("../..")
 +controller = NodePath("..")
++saber = NodePath("../LeftLightSaber")
  
  [node name="RightController" type="XRController3D" parent="XROrigin3D"]
  transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.5, -0.5)
-@@ -175,10 +174,9 @@ script = ExtResource("11_b2bxw")
+@@ -175,10 +175,10 @@ script = ExtResource("11_b2bxw")
  type = 1
  song_player_ref = NodePath("../../../SongPlayer")
  
 -[node name="UIRaycast" parent="XROrigin3D/RightController/RightLightSaber" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
 -transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
-+[node name="UIRaycast" parent="XROrigin3D/RightController" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
++[node name="UIRaycast" parent="XROrigin3D/RightController" node_paths=PackedStringArray("controller", "saber") instance=ExtResource("13_o0ale")]
  ui_raycast_length = 5.0
 -controller = NodePath("../..")
 +controller = NodePath("..")
++saber = NodePath("../RightLightSaber")
  
  [node name="Track" type="Node3D" parent="."]
+ 
+diff --git a/game/sabers/default/default_saber.gd b/game/sabers/default/default_saber.gd
+index 27a2976..ad37908 100644
+--- a/game/sabers/default/default_saber.gd
++++ b/game/sabers/default/default_saber.gd
+@@ -7,6 +7,7 @@ var is_extended := false
+ @onready var light_mesh := $LightSaber_Mesh as MeshInstance3D
+ @onready var _mat := light_mesh.material_override as ShaderMaterial
+ @onready var tip := $tip as Marker3D
++@onready var hilt := $Hilt_Mesh as MeshInstance3D
+ @onready var tail := $tail as SaberTail
+ @onready var hitsound := $hitsound as AudioStreamPlayer3D
  
