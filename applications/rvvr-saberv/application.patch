@@ -213,7 +213,7 @@ index 9a72568..8a588b4 100644
  config/name="RVVR SaberV"
  config/description="RVVR SaberV"
 -config/version="0.0.1-ok1"
-+config/version="0.0.1-ok1+mix7"
++config/version="0.0.1-ok1+mix8"
 +config/use_custom_user_dir=true
 +config/custom_user_dir_name="rvvr-saberv"
  run/main_scene="res://scenes/rvvr_saberv_main.tscn"
@@ -267,7 +267,7 @@ index 9a72568..8a588b4 100644
  openxr/reference_space=2
  openxr/startup_alert=false
 +openxr/headset_only=true
-+openxr/invert_render_target_y=true
++openxr/rotate_render_target_180=true
 +openxr/foveation_level=0
 +openxr/foveation_dynamic=false
 +openxr/foveation_with_subsampled_images=false
