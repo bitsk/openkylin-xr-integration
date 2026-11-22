@@ -85,7 +85,7 @@ index 14a12a5..cabf9db 100644
 +	# Cover workers must finish before their UI callbacks lose their owner.
 +	Utils.finish_pending_threads()
 diff --git a/game/BeepSaber_Game.gd b/game/BeepSaber_Game.gd
-index 871b923..f922561 100644
+index 871b923..649b375 100644
 --- a/game/BeepSaber_Game.gd
 +++ b/game/BeepSaber_Game.gd
 @@ -1,6 +1,8 @@
@@ -116,30 +116,37 @@ index 871b923..f922561 100644
  
  @onready var track := $Track as Node3D
  @onready var standing_ground := $StandingGround as Floor
-@@ -68,6 +69,9 @@ var gamestate: GameState = gamestate_bootup
+@@ -68,6 +69,13 @@ var gamestate: GameState = gamestate_bootup
  var _audio_synced_after_restart := false
  
  var _in_wall := false
 +var _use_mix_stage := OS.get_environment("RVVR_REQUIRE_XR") == "1"
 +var _mix_recenter_pending := false
 +var _mix_origin_y := 0.0
++var _mix_recenter_source := "game"
++var _home_recenter_path := ""
++var _home_recenter_seen := ""
++var _home_recenter_poll_msec := 0
  
  #prevents the song for starting from the start when pausing and unpausing
  var pause_position := 0.0
-@@ -153,6 +157,8 @@ func _check_and_update_saber(controller: BeepSaberController, saber: LightSaber)
+@@ -153,6 +161,10 @@ func _check_and_update_saber(controller: BeepSaberController, saber: LightSaber)
  
  
  func _physics_process(_dt: float) -> void:
++	if not _home_recenter_path.is_empty():
++		_poll_home_recenter()
 +	if _mix_recenter_pending:
 +		_recenter_mix_stage()
  	if debug_info_label.visible:
  		var dbg_text := "FPS: %d\nCube Pool: %d free of %d\nLink Pool: %d free of %d" % [
  			Engine.get_frames_per_second(),
-@@ -193,6 +199,11 @@ func _ready() -> void:
+@@ -193,6 +205,12 @@ func _ready() -> void:
  		right_controller
  	)
  	
 +	if _use_mix_stage:
++		_home_recenter_path = OS.get_environment("XR_APPLICATION_RECENTER_FILE")
 +		left_saber.use_openxr_grip()
 +		right_saber.use_openxr_grip()
 +		left_ui_raycast.use_openxr_aim = true
@@ -147,7 +154,7 @@ index 871b923..f922561 100644
  	vr.pose_recentered.connect(recenter)
  	
  	debug_info_label.visible = Settings.show_debug_info
-@@ -236,7 +247,7 @@ func on_settings_changed(key: StringName) -> void:
+@@ -236,7 +254,7 @@ func on_settings_changed(key: StringName) -> void:
  		&"glare":
  			($WorldEnvironment as WorldEnvironment).environment.glow_enabled = Settings.glare
  		&"player_height_offset":
@@ -156,16 +163,31 @@ index 871b923..f922561 100644
  
  func set_colors_from_settings() -> void:
  	update_left_color(Settings.color_left)
-@@ -403,6 +414,36 @@ func _on_ScenePool_new_scene_instanced(obj: Node3D, during_presizing: bool) -> v
+@@ -402,7 +420,51 @@ func _on_ScenePool_new_scene_instanced(obj: Node3D, during_presizing: bool) -> v
+ 		else:
  			obj.visible = false
  
- func recenter():
+-func recenter():
++func recenter(source: String = "game"):
 +	if _use_mix_stage:
++		_mix_recenter_source = source
 +		_mix_recenter_pending = true
 +		return
  	var xr_camera := $XROrigin3D/XRCamera3D as XRCamera3D
  	xr_origin.rotation.y -= xr_camera.global_rotation.y
  	xr_origin.position -= (xr_camera.global_position * Vector3(1,0,1)) - Vector3(0,0,1)
++
++func _poll_home_recenter() -> void:
++	var now := Time.get_ticks_msec()
++	if now < _home_recenter_poll_msec:
++		return
++	_home_recenter_poll_msec = now + 50
++	if not FileAccess.file_exists(_home_recenter_path):
++		return
++	var event := FileAccess.get_file_as_string(_home_recenter_path).strip_edges()
++	if event.is_valid_int() and event != _home_recenter_seen:
++		_home_recenter_seen = event
++		recenter("controller_home")
 +
 +func _recenter_mix_stage() -> void:
 +	var head := XRServer.get_tracker(&"head") as XRPositionalTracker
@@ -188,6 +210,7 @@ index 871b923..f922561 100644
 +
 +	print("SABERV_FLOOR_CALIBRATION ", JSON.stringify({
 +		"stage": vr.xr_interface.get_play_area_mode() == XRInterface.XR_PLAY_AREA_STAGE,
++		"source": _mix_recenter_source,
 +		"stage_eye_y_m": pose.transform.origin.y,
 +		"floor_y_m": floor_y,
 +		"eye_height_m": xr_origin.to_global(head_transform.origin).y - floor_y,

@@ -127,7 +127,7 @@ def main():
     control.parent.mkdir(parents=True)
     control.write_text('Package: rvvr-saberv\nVersion: 0.0.1-ok1+mix11\nArchitecture: arm64\n'
                        'Maintainer: openKylin XR SIG <xr@lists.openkylin.top>\n'
-                       'Depends: python3, xr-shell-session (>= 0.2.9), xr-session-manager (>= 0.3.22), '
+                       'Depends: python3, xr-shell-session (>= 0.2.10), xr-session-manager (>= 0.3.22), '
                        'libc6 (>= 2.38), libstdc++6, libgcc-s1, libvulkan1, libx11-6\n'
                        'Description: OpenXR SaberV rhythm game for MIX openKylin\n')
     manifest = {'upstream': lock, 'patch_sha256': sha(recipe / 'application.patch'),
