@@ -85,10 +85,19 @@ index 14a12a5..cabf9db 100644
 +	# Cover workers must finish before their UI callbacks lose their owner.
 +	Utils.finish_pending_threads()
 diff --git a/game/BeepSaber_Game.gd b/game/BeepSaber_Game.gd
-index 871b923..2f8c643 100644
+index 871b923..f7463fe 100644
 --- a/game/BeepSaber_Game.gd
 +++ b/game/BeepSaber_Game.gd
-@@ -44,7 +44,6 @@ var gamestate: GameState = gamestate_bootup
+@@ -1,6 +1,8 @@
+ extends Node3D
+ class_name RVVRSaberV
+ 
++const MIX_EYE_HEIGHT_METERS := 1.6
++
+ # 游戏版本
+ var version := "0.0.1-ok1"
+ 
+@@ -44,7 +46,6 @@ var gamestate: GameState = gamestate_bootup
  @onready var map_source_dialogs := $MapSourceDialogs as Node3D
  @onready var online_search_keyboard := $Keyboard_online_search as OQ_UI2DKeyboard
  
@@ -96,6 +105,71 @@ index 871b923..2f8c643 100644
  
  @onready var track := $Track as Node3D
  @onready var standing_ground := $StandingGround as Floor
+@@ -68,6 +69,9 @@ var gamestate: GameState = gamestate_bootup
+ var _audio_synced_after_restart := false
+ 
+ var _in_wall := false
++var _use_mix_stage := OS.get_environment("RVVR_REQUIRE_XR") == "1"
++var _mix_recenter_pending := false
++var _mix_origin_y := 0.0
+ 
+ #prevents the song for starting from the start when pausing and unpausing
+ var pause_position := 0.0
+@@ -153,6 +157,8 @@ func _check_and_update_saber(controller: BeepSaberController, saber: LightSaber)
+ 
+ 
+ func _physics_process(_dt: float) -> void:
++	if _mix_recenter_pending:
++		_recenter_mix_stage()
+ 	if debug_info_label.visible:
+ 		var dbg_text := "FPS: %d\nCube Pool: %d free of %d\nLink Pool: %d free of %d" % [
+ 			Engine.get_frames_per_second(),
+@@ -236,7 +242,7 @@ func on_settings_changed(key: StringName) -> void:
+ 		&"glare":
+ 			($WorldEnvironment as WorldEnvironment).environment.glow_enabled = Settings.glare
+ 		&"player_height_offset":
+-			xr_origin.transform.origin.y = Settings.player_height_offset
++			xr_origin.position.y = _mix_origin_y + Settings.player_height_offset
+ 
+ func set_colors_from_settings() -> void:
+ 	update_left_color(Settings.color_left)
+@@ -403,6 +409,36 @@ func _on_ScenePool_new_scene_instanced(obj: Node3D, during_presizing: bool) -> v
+ 			obj.visible = false
+ 
+ func recenter():
++	if _use_mix_stage:
++		_mix_recenter_pending = true
++		return
+ 	var xr_camera := $XROrigin3D/XRCamera3D as XRCamera3D
+ 	xr_origin.rotation.y -= xr_camera.global_rotation.y
+ 	xr_origin.position -= (xr_camera.global_position * Vector3(1,0,1)) - Vector3(0,0,1)
++
++func _recenter_mix_stage() -> void:
++	var head := XRServer.get_tracker(&"head") as XRPositionalTracker
++	var pose := head.get_pose(&"default") if head else null
++	if not pose or not pose.has_tracking_data or pose.tracking_confidence == XRPose.XR_TRACKING_CONFIDENCE_NONE:
++		return
++
++	var head_transform := pose.get_adjusted_transform()
++	if not head_transform.is_finite():
++		return
++
++	# Offset the shared origin once so the camera and both controllers stay aligned.
++	xr_origin.rotation.y -= (xr_origin.global_transform * head_transform).basis.get_euler().y
++	var floor_y := standing_ground.global_position.y
++	var eye_target := Vector3(0.0, floor_y + MIX_EYE_HEIGHT_METERS, 1.0)
++	xr_origin.global_position += eye_target - xr_origin.to_global(head_transform.origin)
++	_mix_origin_y = xr_origin.position.y
++	xr_origin.position.y += Settings.player_height_offset
++	_mix_recenter_pending = false
++
++	print("SABERV_FLOOR_CALIBRATION ", JSON.stringify({
++		"stage": vr.xr_interface.get_play_area_mode() == XRInterface.XR_PLAY_AREA_STAGE,
++		"stage_eye_y_m": pose.transform.origin.y,
++		"floor_y_m": floor_y,
++		"eye_height_m": xr_origin.to_global(head_transform.origin).y - floor_y,
++		"manual_offset_m": Settings.player_height_offset
++	}))
 diff --git a/game/HighscorePanel.gd b/game/HighscorePanel.gd
 index a8f280e..8e0c5b9 100644
 --- a/game/HighscorePanel.gd
@@ -205,7 +279,7 @@ index 499cc7a..c192534 100644
  	new_button.pressed.connect(_on_NameButton_pressed.bind(name))
  	_name_row.add_child(new_button)
 diff --git a/project.godot b/project.godot
-index 9a72568..8a588b4 100644
+index 9a72568..480ad9b 100644
 --- a/project.godot
 +++ b/project.godot
 @@ -12,12 +12,14 @@ config_version=5
@@ -213,7 +287,7 @@ index 9a72568..8a588b4 100644
  config/name="RVVR SaberV"
  config/description="RVVR SaberV"
 -config/version="0.0.1-ok1"
-+config/version="0.0.1-ok1+mix8"
++config/version="0.0.1-ok1+mix9"
 +config/use_custom_user_dir=true
 +config/custom_user_dir_name="rvvr-saberv"
  run/main_scene="res://scenes/rvvr_saberv_main.tscn"
@@ -262,12 +336,14 @@ index 9a72568..8a588b4 100644
  shading/overrides/force_lambert_over_burley=true
  environment/defaults/default_clear_color=Color(0, 0, 0, 1)
  anti_aliasing/quality/use_debanding=true
-@@ -180,4 +179,9 @@ right_saber={
+@@ -178,6 +177,10 @@ right_saber={
+ [xr]
+ 
  openxr/enabled=true
- openxr/reference_space=2
+-openxr/reference_space=2
++openxr/reference_space=1
  openxr/startup_alert=false
 +openxr/headset_only=true
-+openxr/rotate_render_target_180=true
 +openxr/foveation_level=0
 +openxr/foveation_dynamic=false
 +openxr/foveation_with_subsampled_images=false
