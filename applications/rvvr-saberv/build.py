@@ -113,7 +113,7 @@ def main():
         install(source, 'usr/share/rvvr-saberv/songs/TheFatRat_Timelapse/' + name)
     entry = root / 'usr/bin/rvvr-saberv'
     entry.parent.mkdir(parents=True, exist_ok=True)
-    entry.write_text('#!/bin/sh\nexec /usr/bin/pkexec --disable-internal-agent /usr/lib/xr/session-manager/app_session.py rvvr-saberv\n')
+    entry.write_text('#!/bin/sh\nexec /usr/bin/xr-shell-session --launch-application rvvr-saberv\n')
     entry.chmod(0o755)
     definition = root / 'usr/share/xr/applications/rvvr-saberv.json'
     definition.parent.mkdir(parents=True, exist_ok=True)
@@ -122,12 +122,12 @@ def main():
     desktop.parent.mkdir(parents=True, exist_ok=True)
     desktop.write_text('[Desktop Entry]\nType=Application\nName=RVVR SaberV\n'
                        'Name[zh_CN]=SaberV 节奏光剑\nExec=rvvr-saberv\n'
-                       'Icon=rvvr-saberv\nCategories=Game;\nTerminal=false\n')
+                       'Icon=rvvr-saberv\nCategories=Game;\nX-XR-Immersive=true\nTerminal=false\n')
     control = root / 'DEBIAN/control'
     control.parent.mkdir(parents=True)
-    control.write_text('Package: rvvr-saberv\nVersion: 0.0.1-ok1+mix6\nArchitecture: arm64\n'
+    control.write_text('Package: rvvr-saberv\nVersion: 0.0.1-ok1+mix7\nArchitecture: arm64\n'
                        'Maintainer: openKylin XR SIG <xr@lists.openkylin.top>\n'
-                       'Depends: python3, pkexec, xr-session-manager (>= 0.3.20), '
+                       'Depends: python3, xr-shell-session (>= 0.2.9), xr-session-manager (>= 0.3.22), '
                        'libc6 (>= 2.38), libstdc++6, libgcc-s1, libvulkan1, libx11-6\n'
                        'Description: OpenXR SaberV rhythm game for MIX openKylin\n')
     manifest = {'upstream': lock, 'patch_sha256': sha(recipe / 'application.patch'),
@@ -137,7 +137,7 @@ def main():
                 'pack_sha256': sha(pack), 'device_validated': False}
     (root / 'usr/share/doc/rvvr-saberv/source-lock.json').write_text(json.dumps(manifest, indent=2) + '\n')
     run(['dpkg-deb', '--root-owner-group', '-Zxz', '-z3', '--build', root,
-         packages / 'rvvr-saberv_0.0.1-ok1+mix6_arm64.deb'])
+         packages / 'rvvr-saberv_0.0.1-ok1+mix7_arm64.deb'])
 
 
 if __name__ == '__main__':

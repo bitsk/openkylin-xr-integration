@@ -213,7 +213,7 @@ index 9a72568..8a588b4 100644
  config/name="RVVR SaberV"
  config/description="RVVR SaberV"
 -config/version="0.0.1-ok1"
-+config/version="0.0.1-ok1+mix6"
++config/version="0.0.1-ok1+mix7"
 +config/use_custom_user_dir=true
 +config/custom_user_dir_name="rvvr-saberv"
  run/main_scene="res://scenes/rvvr_saberv_main.tscn"
