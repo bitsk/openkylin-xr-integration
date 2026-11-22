@@ -85,7 +85,7 @@ index 14a12a5..cabf9db 100644
 +	# Cover workers must finish before their UI callbacks lose their owner.
 +	Utils.finish_pending_threads()
 diff --git a/game/BeepSaber_Game.gd b/game/BeepSaber_Game.gd
-index 871b923..f7463fe 100644
+index 871b923..f922561 100644
 --- a/game/BeepSaber_Game.gd
 +++ b/game/BeepSaber_Game.gd
 @@ -1,6 +1,8 @@
@@ -96,6 +96,17 @@ index 871b923..f7463fe 100644
 +
  # 游戏版本
  var version := "0.0.1-ok1"
+ 
+@@ -18,8 +20,8 @@ var gamestate: GameState = gamestate_bootup
+ @onready var right_controller := $XROrigin3D/RightController as BeepSaberController
+ @onready var left_saber := $XROrigin3D/LeftController/LeftLightSaber as LightSaber
+ @onready var right_saber := $XROrigin3D/RightController/RightLightSaber as LightSaber
+-@onready var left_ui_raycast := $XROrigin3D/LeftController/LeftLightSaber/UIRaycast as UIRaycast
+-@onready var right_ui_raycast := $XROrigin3D/RightController/RightLightSaber/UIRaycast as UIRaycast
++@onready var left_ui_raycast := $XROrigin3D/LeftController/UIRaycast as UIRaycast
++@onready var right_ui_raycast := $XROrigin3D/RightController/UIRaycast as UIRaycast
+ @onready var goggles_shader := ($XROrigin3D/XRCamera3D/VRGoggles as MeshInstance3D).material_override as ShaderMaterial
+ @onready var debug_info_label := $XROrigin3D/XRCamera3D/PlayerHead/DebugInfoLabel as MeshInstance3D
  
 @@ -44,7 +46,6 @@ var gamestate: GameState = gamestate_bootup
  @onready var map_source_dialogs := $MapSourceDialogs as Node3D
@@ -124,7 +135,19 @@ index 871b923..f7463fe 100644
  	if debug_info_label.visible:
  		var dbg_text := "FPS: %d\nCube Pool: %d free of %d\nLink Pool: %d free of %d" % [
  			Engine.get_frames_per_second(),
-@@ -236,7 +242,7 @@ func on_settings_changed(key: StringName) -> void:
+@@ -193,6 +199,11 @@ func _ready() -> void:
+ 		right_controller
+ 	)
+ 	
++	if _use_mix_stage:
++		left_saber.use_openxr_grip()
++		right_saber.use_openxr_grip()
++		left_ui_raycast.use_openxr_aim = true
++		right_ui_raycast.use_openxr_aim = true
+ 	vr.pose_recentered.connect(recenter)
+ 	
+ 	debug_info_label.visible = Settings.show_debug_info
+@@ -236,7 +247,7 @@ func on_settings_changed(key: StringName) -> void:
  		&"glare":
  			($WorldEnvironment as WorldEnvironment).environment.glow_enabled = Settings.glare
  		&"player_height_offset":
@@ -133,7 +156,7 @@ index 871b923..f7463fe 100644
  
  func set_colors_from_settings() -> void:
  	update_left_color(Settings.color_left)
-@@ -403,6 +409,36 @@ func _on_ScenePool_new_scene_instanced(obj: Node3D, during_presizing: bool) -> v
+@@ -403,6 +414,36 @@ func _on_ScenePool_new_scene_instanced(obj: Node3D, during_presizing: bool) -> v
  			obj.visible = false
  
  func recenter():
@@ -229,10 +252,18 @@ index 8558306..8e1b9db 100644
  
  @warning_ignore("unused_parameter")
 diff --git a/game/scripts/SwingableRayCast/SwingableRayCast.gd b/game/scripts/SwingableRayCast/SwingableRayCast.gd
-index 6d2f236..8cf50e6 100644
+index 6d2f236..7405b4e 100644
 --- a/game/scripts/SwingableRayCast/SwingableRayCast.gd
 +++ b/game/scripts/SwingableRayCast/SwingableRayCast.gd
-@@ -49,7 +49,7 @@ func _ready() -> void:
+@@ -20,6 +20,7 @@ const MIN_SWEPT_LENGTH_THRESHOLD := 0.035
+ var core_ray_collision_count := 0
+ var aux_ray_collision_count := 0
+ var adjust_segments := true
++var _reset_sweep := true
+ 
+ var _prev_ray_positions: Array[Vector3] = []
+ var _rays: Array[RayCast3D]
+@@ -49,7 +50,7 @@ func _ready() -> void:
  			_debug_curr_balls.append(new_ball)
  	
  	# no longer need original instance
@@ -241,6 +272,52 @@ index 6d2f236..8cf50e6 100644
  
  # override so that we can update child segments too
  func _set_collision_mask_value(bit: int, value: bool) -> void:
+@@ -65,7 +66,10 @@ func reset_counters() -> void:
+ 	aux_ray_collision_count = 0
+ 
+ func set_raycasts_enabled(value: bool) -> void:
++	if enabled == value:
++		return
+ 	enabled = value
++	_reset_sweep = true
+ 
+ func _update_element_positions() -> void:
+ 	# generate new locations for ray casters
+@@ -86,7 +90,7 @@ func _update_element_positions() -> void:
+ 		next_local_pos += step_dist
+ 
+ func _physics_process(_delta: float) -> void:
+-	if not enabled: return
++	if not enabled or _rays.size() != num_collision_raycasts: return
+ 	_sw.start()
+ 	# see if 'core' ray is colliding with anything
+ 	var coll := get_collider()
+@@ -97,7 +101,7 @@ func _physics_process(_delta: float) -> void:
+ 	# ---------------------
+ 	
+ 	# update positions of segmented ray casts and check for collisions on them
+-	if adjust_segments:
++	if adjust_segments or _reset_sweep:
+ 		_update_element_positions()
+ 	
+ 	for i in range(num_collision_raycasts):
+@@ -105,7 +109,7 @@ func _physics_process(_delta: float) -> void:
+ 			
+ 		# cast a ray to the newest location and check for collisions
+ 		ray.target_position = ray.to_local(_prev_ray_positions[i])
+-		if ray.target_position.length() > MIN_SWEPT_LENGTH_THRESHOLD:
++		if not _reset_sweep and ray.target_position.length() > MIN_SWEPT_LENGTH_THRESHOLD:
+ 			ray.force_raycast_update()
+ 			coll = ray.get_collider()
+ 			if coll is Area3D:
+@@ -113,6 +117,7 @@ func _physics_process(_delta: float) -> void:
+ 				area_collided.emit(coll)
+ 		
+ 		_prev_ray_positions[i] = ray.global_transform.origin
++	_reset_sweep = false
+ 		
+ 	if DEBUG:
+ 		var old_slice := _debug_raycast_trail.pop_back() as Array[RayCast3D]
 diff --git a/game/scripts/Utils.gd b/game/scripts/Utils.gd
 index 66298bb..03bbeb9 100644
 --- a/game/scripts/Utils.gd
@@ -279,7 +356,7 @@ index 499cc7a..c192534 100644
  	new_button.pressed.connect(_on_NameButton_pressed.bind(name))
  	_name_row.add_child(new_button)
 diff --git a/project.godot b/project.godot
-index 9a72568..480ad9b 100644
+index 9a72568..922770d 100644
 --- a/project.godot
 +++ b/project.godot
 @@ -12,12 +12,14 @@ config_version=5
@@ -287,7 +364,7 @@ index 9a72568..480ad9b 100644
  config/name="RVVR SaberV"
  config/description="RVVR SaberV"
 -config/version="0.0.1-ok1"
-+config/version="0.0.1-ok1+mix9"
++config/version="0.0.1-ok1+mix10"
 +config/use_custom_user_dir=true
 +config/custom_user_dir_name="rvvr-saberv"
  run/main_scene="res://scenes/rvvr_saberv_main.tscn"
@@ -380,3 +457,156 @@ index ca940aa..116d8dc 100644
 +		trigger = false
 +		trigger_last_frame = false
 +		first_time = true
+diff --git a/game/LightSaber.gd b/game/LightSaber.gd
+index 428747f..1e887ca 100644
+--- a/game/LightSaber.gd
++++ b/game/LightSaber.gd
+@@ -23,6 +23,18 @@ var extra_offset_rot := Vector3.ZERO
+ var saber_end := Vector3.ZERO
+ var saber_end_past := Vector3.ZERO
+ var last_dt := 0.0
++var _use_openxr_grip := false
++var _grip_was_tracked := false
++var _swingcast_requested := false
++var _reported_cut := false
++
++func use_openxr_grip() -> void:
++	_use_openxr_grip = true
++	controller.pose = &"grip"
++	# The blade points along local +Y. Both stock hilt meshes center at local Y=-0.03.
++	# Point the blade along grip -Z and place the hilt center at the tracked grip.
++	offset_rot = Vector3(-90.0, 0.0, 0.0)
++	offset_pos = Vector3(0.0, 0.0, -0.03)
+ 
+ func _show() -> void:
+ 	if not is_extended():
+@@ -88,10 +100,25 @@ func _ready() -> void:
+ 	_swing_cast._set_collision_mask_value(CollisionLayerConstants.Bombs_bit, true)
+ 
+ func _physics_process(delta: float) -> void:
++	var grip_reacquired := false
++	if _use_openxr_grip:
++		var grip := controller.get_pose()
++		var tracked := grip != null and grip.has_tracking_data and grip.tracking_confidence != XRPose.XR_TRACKING_CONFIDENCE_NONE
++		visible = tracked
++		_swing_cast.set_raycasts_enabled(tracked and _swingcast_requested)
++		grip_reacquired = tracked and not _grip_was_tracked
++		_grip_was_tracked = tracked
++		if not tracked:
++			return
++
+ 	position = offset_pos + extra_offset_pos
+ 	rotation_degrees = offset_rot + extra_offset_rot
+ 	saber_end_past = saber_end
+ 	saber_end = saber_visual.tip.global_transform.origin
++	if grip_reacquired:
++		saber_end_past = saber_end
++		controller.reset_movement_aabb()
++		print("SABERV_GRIP ", String(controller.tracker), " forward=-Z hilt_z=-0.03")
+ 	last_dt = delta
+ 	if is_extended():
+ 		#check floor collision for burn mark
+@@ -115,10 +142,11 @@ func set_saber(saber_path: String) -> void:
+ 		saber_visual.set_trail(Settings.saber_tail)
+ 
+ func set_swingcast_enabled(value: bool) -> void:
+-	_swing_cast.set_raycasts_enabled(value)
++	_swingcast_requested = value
++	_swing_cast.set_raycasts_enabled(value and (not _use_openxr_grip or _grip_was_tracked))
+ 
+ func _handle_area_collided(area: Area3D) -> void:
+-	if Scoreboard.paused: return
++	if Scoreboard.paused or (_use_openxr_grip and not _grip_was_tracked): return
+ 	var cut_object := area.get_parent()
+ 	if not cut_object is Cuttable: return
+ 	var note := cut_object as Cuttable
+@@ -130,11 +158,15 @@ func _handle_area_collided(area: Area3D) -> void:
+ 	saber_visual.hit(time_offset)
+ 	controller.simple_rumble(0.75, 0.1)
+ 	
+-	var o := controller.global_transform.origin
++	var o := global_position
+ 	var controller_speed: Vector3 = (saber_end - saber_end_past) / last_dt
+ 	const BEAT_DISTANCE := 4.0
+ 	var cutplane := Plane(o, saber_end, saber_end_past + Vector3(0, 0, BEAT_DISTANCE * Map.current_info.beats_per_minute * last_dt / 30)) # Account for relative position to track speed
++	var points_before := Scoreboard.points
+ 	note.cut(type, controller_speed, cutplane, controller)
++	if _use_openxr_grip and not _reported_cut and Scoreboard.points > points_before:
++		print("SABERV_CUT ", String(controller.tracker), " points=", Scoreboard.points)
++		_reported_cut = true
+ 
+ func _on_AnimationPlayer_animation_started(_anim_name: StringName) -> void:
+ 	_swing_cast.adjust_segments = true
+diff --git a/game/scripts/UIRaycast/UIRaycast.gd b/game/scripts/UIRaycast/UIRaycast.gd
+index 844799c..f091c30 100644
+--- a/game/scripts/UIRaycast/UIRaycast.gd
++++ b/game/scripts/UIRaycast/UIRaycast.gd
+@@ -10,6 +10,8 @@ class_name UIRaycast
+ @onready var ui_raycast_mesh := $RayCastPosition/RayCastMesh as MeshInstance3D
+ @onready var ui_raycast_hitmarker := $RayCastPosition/RayCastHitMarker as MeshInstance3D
+ 
++var use_openxr_aim := false
++var _reported_aim := false
+ var is_colliding := false;
+ var colliding_with: Object = null
+ 
+@@ -49,5 +51,27 @@ func _ready() -> void:
+ 
+ # we use the physics process here be in sync with the controller position
+ func _physics_process(_dt: float) -> void:
+-	if active and visible:
++	if active and visible and (not use_openxr_aim or _update_openxr_aim()):
+ 		_update_raycasts()
++		return
++
++	ui_raycast_mesh.hide()
++	ui_raycast_hitmarker.hide()
++	if is_instance_valid(colliding_with) and colliding_with is UIRaycastTarget:
++		(colliding_with as UIRaycastTarget).ui_raycast_exit()
++	colliding_with = null
++	is_colliding = false
++
++func _update_openxr_aim() -> bool:
++	var hand := XRServer.get_tracker(controller.tracker) as XRPositionalTracker
++	var aim := hand.get_pose(&"aim") if hand else null
++	if not aim or not aim.has_tracking_data or aim.tracking_confidence == XRPose.XR_TRACKING_CONFIDENCE_NONE:
++		return false
++	var aim_transform := aim.get_adjusted_transform()
++	if not aim_transform.is_finite():
++		return false
++	global_transform = (controller.get_parent_node_3d().global_transform * aim_transform)
++	if not _reported_aim:
++		print("SABERV_AIM ", String(controller.tracker), " forward=-Z")
++		_reported_aim = true
++	return true
+diff --git a/scenes/rvvr_saberv_main.tscn b/scenes/rvvr_saberv_main.tscn
+index 5ca790c..daa468b 100644
+--- a/scenes/rvvr_saberv_main.tscn
++++ b/scenes/rvvr_saberv_main.tscn
+@@ -160,11 +160,10 @@ script = ExtResource("11_b2bxw")
+ [node name="LeftLightSaber" parent="XROrigin3D/LeftController" node_paths=PackedStringArray("song_player_ref") instance=ExtResource("12_bp2w7")]
+ song_player_ref = NodePath("../../../SongPlayer")
+ 
+-[node name="UIRaycast" parent="XROrigin3D/LeftController/LeftLightSaber" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
+-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
++[node name="UIRaycast" parent="XROrigin3D/LeftController" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
+ active = false
+ ui_raycast_length = 5.0
+-controller = NodePath("../..")
++controller = NodePath("..")
+ 
+ [node name="RightController" type="XRController3D" parent="XROrigin3D"]
+ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.5, -0.5)
+@@ -175,10 +174,9 @@ script = ExtResource("11_b2bxw")
+ type = 1
+ song_player_ref = NodePath("../../../SongPlayer")
+ 
+-[node name="UIRaycast" parent="XROrigin3D/RightController/RightLightSaber" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
+-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
++[node name="UIRaycast" parent="XROrigin3D/RightController" node_paths=PackedStringArray("controller") instance=ExtResource("13_o0ale")]
+ ui_raycast_length = 5.0
+-controller = NodePath("../..")
++controller = NodePath("..")
+ 
+ [node name="Track" type="Node3D" parent="."]
+ 

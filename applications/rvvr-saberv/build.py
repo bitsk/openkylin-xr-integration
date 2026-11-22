@@ -125,7 +125,7 @@ def main():
                        'Icon=rvvr-saberv\nCategories=Game;\nX-XR-Immersive=true\nTerminal=false\n')
     control = root / 'DEBIAN/control'
     control.parent.mkdir(parents=True)
-    control.write_text('Package: rvvr-saberv\nVersion: 0.0.1-ok1+mix9\nArchitecture: arm64\n'
+    control.write_text('Package: rvvr-saberv\nVersion: 0.0.1-ok1+mix10\nArchitecture: arm64\n'
                        'Maintainer: openKylin XR SIG <xr@lists.openkylin.top>\n'
                        'Depends: python3, xr-shell-session (>= 0.2.9), xr-session-manager (>= 0.3.22), '
                        'libc6 (>= 2.38), libstdc++6, libgcc-s1, libvulkan1, libx11-6\n'
@@ -137,7 +137,7 @@ def main():
                 'pack_sha256': sha(pack), 'device_validated': False}
     (root / 'usr/share/doc/rvvr-saberv/source-lock.json').write_text(json.dumps(manifest, indent=2) + '\n')
     run(['dpkg-deb', '--root-owner-group', '-Zxz', '-z3', '--build', root,
-         packages / 'rvvr-saberv_0.0.1-ok1+mix9_arm64.deb'])
+         packages / 'rvvr-saberv_0.0.1-ok1+mix10_arm64.deb'])
 
 
 if __name__ == '__main__':
