@@ -16,8 +16,8 @@ Description: XR distribution integration and model definitions
 
 Package: xr-device-a081
 Architecture: all
-Depends: ${misc:Depends}, openkylin-xr-defaults, firmware-xr-a081
-Description: A081 board audio sensors and thermal integration
+Depends: ${misc:Depends}, openkylin-xr-defaults, firmware-xr-a081, python3
+Description: A081 board audio, power indicator, sensors and thermal integration
  Independently maintained XR component for openKylin integration.
 
 Package: xr-device-a081-vr

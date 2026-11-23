@@ -1,0 +1,8 @@
+[Unit]
+Description=Qiyu MIX power indicator
+ConditionPathExists=/sys/class/leds/rgb:power/multi_index
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/lib/xr/a081/power-led.py
+Restart=on-failure
+RestartSec=2s
