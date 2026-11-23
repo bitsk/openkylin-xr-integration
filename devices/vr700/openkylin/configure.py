@@ -75,6 +75,13 @@ def main():
         q.symlink_to(target)
 
     shutil.copytree(board / 'overlay', root, dirs_exist_ok=True, symlinks=True)
+    # Both iQIYI boards use the same Q6ASM PCM devices and mixer controls.
+    shared_audio = board.parent / 'a081' / 'overlay'
+    for name in ('usr/share/alsa/ucm2/Qualcomm/sm8250/a081/HiFi.conf',
+                 'usr/share/wireplumber/wireplumber.conf.d/51-a081-audio-format.conf'):
+        destination = root / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(shared_audio / name, destination)
     link('etc/systemd/system/multi-user.target.wants/vr700-usb-console.service',
          '../vr700-usb-console.service')
     module_target = root / 'usr/lib/modules' / a.kernel_release
