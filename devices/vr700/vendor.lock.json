@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "repository": "bitsk/qiyu-vendor",
+  "visibility": "public",
+  "tag": "iqiyi-audio-r1",
+  "model": "vr700",
+  "per_device_calibration_included": false,
+  "bundles": {
+    "adsp": {
+      "asset": "vr700-adsp-iqiyi-audio-r1.tar.gz",
+      "bytes": 6279172,
+      "sha256": "ee7525428f29b1ef067fcf72bbc0d58e6175d094f17e562a7b155781048a2202",
+      "files": [
+        {
+          "path": "adsp.b00",
+          "bytes": 692,
+          "mode": 420,
+          "sha256": "78778cfc0243701c84bf85884b7c66d5177562b7808f732e245c02c65ab31c6d",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b00"
+        },
+        {
+          "path": "adsp.b01",
+          "bytes": 7528,
+          "mode": 420,
+          "sha256": "3a82016946c3331a714a65bae878b994725dc52c494c33e498e15d2e2fb91021",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b01"
+        },
+        {
+          "path": "adsp.b02",
+          "bytes": 82552,
+          "mode": 420,
+          "sha256": "b5905fa185ef292dbd2303b054b7acd5bc5354abec8dc37fefbc177b787526ac",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b02"
+        },
+        {
+          "path": "adsp.b03",
+          "bytes": 358784,
+          "mode": 420,
+          "sha256": "a24ed0cfdcc4e4528aca1e087c9e3bb6798986d34cc4fe1ab356a1aac6e9378e",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b03"
+        },
+        {
+          "path": "adsp.b04",
+          "bytes": 1961452,
+          "mode": 420,
+          "sha256": "e208a02805e73d3fb75597ef508da2e4752a2b03683563bfaabe18ceba35b69b",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b04"
+        },
+        {
+          "path": "adsp.b05",
+          "bytes": 2487868,
+          "mode": 420,
+          "sha256": "e2010f628bd292bd0bcc9dfc3905cd5c15a58ccd8be6d45e47c8f655035f2c8f",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b05"
+        },
+        {
+          "path": "adsp.b06",
+          "bytes": 38640,
+          "mode": 420,
+          "sha256": "6330322efc9e7ceb48f9c2c75db0e38f6f546f04f11a96b2da4695ad0ca8277b",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b06"
+        },
+        {
+          "path": "adsp.b07",
+          "bytes": 28972,
+          "mode": 420,
+          "sha256": "cb9fbd8220da1b64e22959f62518782be53251140bcd30ae469e33ad1de2951d",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b07"
+        },
+        {
+          "path": "adsp.b08",
+          "bytes": 126736,
+          "mode": 420,
+          "sha256": "5a6af3b787775d028fa9c9174bcd1a5e3fab7f5545a20c9e0772a8e7488934f7",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b08"
+        },
+        {
+          "path": "adsp.b09",
+          "bytes": 64424,
+          "mode": 420,
+          "sha256": "34ca6f6a98d8d11dbccefc2ae407934d0ec2879a37201e8fe2da52d3e346266c",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b09"
+        },
+        {
+          "path": "adsp.b10",
+          "bytes": 610304,
+          "mode": 420,
+          "sha256": "eeead0a774ac358d78b3b3b66a62af9aba8f40e3226bc66a05f86569eb3ec69c",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b10"
+        },
+        {
+          "path": "adsp.b11",
+          "bytes": 7184344,
+          "mode": 420,
+          "sha256": "96e170b121752df74ff12cc8cc3266f4b32cd29276007f9b5e805b9c554a494f",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b11"
+        },
+        {
+          "path": "adsp.b12",
+          "bytes": 311472,
+          "mode": 420,
+          "sha256": "eea3549e6439ed600359ab7417cb81c5e25b87622eb3f8560f7af29b9dbdf407",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b12"
+        },
+        {
+          "path": "adsp.b13",
+          "bytes": 240,
+          "mode": 420,
+          "sha256": "9486827a8655d5b90393359d5bee4288ed9a7fb90425e57335280e6e9b946919",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b13"
+        },
+        {
+          "path": "adsp.b14",
+          "bytes": 103764,
+          "mode": 420,
+          "sha256": "1f7b674de6aa942ff70e7b565cdbe251fd76974747ecc86e3eb9ee2e694f6149",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b14"
+        },
+        {
+          "path": "adsp.b15",
+          "bytes": 1346476,
+          "mode": 420,
+          "sha256": "ec8e090372274ef66bcd64d4a40cd3985a4a632e3d6b1ed8e7ec14a2dfaa389e",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b15"
+        },
+        {
+          "path": "adsp.b16",
+          "bytes": 79592,
+          "mode": 420,
+          "sha256": "dfecc7bcd55757bd89bf65f634f32ae6be6b63b5576cc8d0de2a15a13fa51a4f",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b16"
+        },
+        {
+          "path": "adsp.b17",
+          "bytes": 1044656,
+          "mode": 420,
+          "sha256": "5340ef10005de6be0c2ab3ee0d0c5ba1076d89ede014ba2cc5a570f40f755b62",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b17"
+        },
+        {
+          "path": "adsp.b18",
+          "bytes": 164,
+          "mode": 420,
+          "sha256": "700996b1573ce5e1a97bbb4e4649bbb37e793b64c468a7857d0d903d0e132736",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.b18"
+        },
+        {
+          "path": "adsp.mdt",
+          "bytes": 8220,
+          "mode": 420,
+          "sha256": "d6db974fc8c78360ee1f3d07a4e11fdaa90df3d4be3483ff803a491f56da9d13",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/adsp.mdt"
+        }
+      ],
+      "asset_id": 781826004,
+      "asset_tag": "iqiyi-audio-r1"
+    },
+    "speaker": {
+      "asset": "iqiyi-aw88261-iqiyi-audio-r1.tar.gz",
+      "bytes": 626,
+      "sha256": "2aa98d83eecb9091a331ac733aff96247470b67a6e26f18378f1da250c26e39b",
+      "files": [
+        {
+          "path": "aw88261_acf.bin",
+          "bytes": 2016,
+          "mode": 420,
+          "sha256": "974020bcb922fffee3168268f356ff5408fc008e7da1a55bdc97d020d337a6fb",
+          "install_path": "usr/lib/firmware/xr/vr700/qcom/sm8250/iqiyi/vr700/aw88261_acf.bin"
+        }
+      ],
+      "asset_id": 781826015,
+      "asset_tag": "iqiyi-audio-r1"
+    }
+  }
+}

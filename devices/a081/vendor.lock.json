@@ -1771,6 +1771,22 @@
       ],
       "asset_id": 702240327,
       "download_url": "https://github.com/bitsk/qiyu-vendor/releases/download/a081-vendor-r1/a081-controller-dsp-a081-vendor-r1.tar.gz"
+    },
+    "speaker": {
+      "asset": "iqiyi-aw88261-iqiyi-audio-r1.tar.gz",
+      "bytes": 626,
+      "sha256": "2aa98d83eecb9091a331ac733aff96247470b67a6e26f18378f1da250c26e39b",
+      "files": [
+        {
+          "path": "aw88261_acf.bin",
+          "bytes": 2016,
+          "mode": 420,
+          "sha256": "974020bcb922fffee3168268f356ff5408fc008e7da1a55bdc97d020d337a6fb",
+          "install_path": "usr/lib/firmware/xr/a081/qcom/sm8250/iqiyi/a081/aw88261_acf.bin"
+        }
+      ],
+      "asset_id": 781826015,
+      "asset_tag": "iqiyi-audio-r1"
     }
   },
   "platform": "github",

@@ -13,5 +13,14 @@
   "automatic_device_install": false,
   "kernel_command_line": [
     "firmware_class.path=/usr/lib/firmware/xr/a081"
+  ],
+  "shared_overlay": "iqiyi-audio/overlay",
+  "openkylin_vendor_bundles": [
+    "firmware",
+    "speaker"
+  ],
+  "openkylin_packages": [
+    "linux-image-xr-arm64",
+    "openkylin-xr-defaults"
   ]
 }

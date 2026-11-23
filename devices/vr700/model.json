@@ -24,5 +24,15 @@
     "HyperSpace simulated-input startup and cleanup"
   ],
   "physical_tracking_validated": false,
-  "physical_wearer_validated": false
+  "physical_wearer_validated": false,
+  "shared_overlay": "iqiyi-audio/overlay",
+  "openkylin_vendor_bundles": [
+    "adsp",
+    "speaker"
+  ],
+  "openkylin_packages": [
+    "linux-image-xr-arm64",
+    "openkylin-xr-defaults"
+  ],
+  "openkylin_profile": "vr700-kernel"
 }

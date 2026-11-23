@@ -56,7 +56,8 @@ def main():
     if modules is None or not a.firmware.is_dir():
         p.error('Matching modules and explicit VR700 firmware required')
     board = a.board_root.resolve() if a.board_root else Path(__file__).resolve().parents[1]
-    if json.loads((board / 'model.json').read_text()).get('id') != 'vr700':
+    model = json.loads((board / 'model.json').read_text())
+    if model.get('id') != 'vr700':
         p.error('Expected VR700 board integration source')
 
     def write(name, text, mode=0o644):
@@ -74,14 +75,8 @@ def main():
             q.unlink()
         q.symlink_to(target)
 
+    shutil.copytree(board.parent / model['shared_overlay'], root, dirs_exist_ok=True, symlinks=True)
     shutil.copytree(board / 'overlay', root, dirs_exist_ok=True, symlinks=True)
-    # Both iQIYI boards use the same Q6ASM PCM devices and mixer controls.
-    shared_audio = board.parent / 'a081' / 'overlay'
-    for name in ('usr/share/alsa/ucm2/Qualcomm/sm8250/a081/HiFi.conf',
-                 'usr/share/wireplumber/wireplumber.conf.d/51-a081-audio-format.conf'):
-        destination = root / name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(shared_audio / name, destination)
     link('etc/systemd/system/multi-user.target.wants/vr700-usb-console.service',
          '../vr700-usb-console.service')
     module_target = root / 'usr/lib/modules' / a.kernel_release

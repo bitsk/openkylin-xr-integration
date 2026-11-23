@@ -38,10 +38,13 @@ def run(*args):subprocess.run(['chroot',str(r),*args],check=True,env={**os.envir
 
 # Maintain native distribution libraries; only board resources cross roots.
 board=Path(__file__).resolve().parent.parent
+model_config=json.loads((board/'model.json').read_text())
+shutil.copytree(board.parent/model_config['shared_overlay'],r,dirs_exist_ok=True,symlinks=True)
 shutil.copytree(board/'overlay',r,dirs_exist_ok=True,symlinks=True)
 shutil.copytree(s/'usr/lib/modules'/a.kernel_release,r/'usr/lib/modules'/a.kernel_release,symlinks=True)
 for folder in ['qcom','ath11k']:
  shutil.copytree(s/'usr/lib/firmware'/folder,r/'usr/lib/firmware'/folder,dirs_exist_ok=True,symlinks=True)
+shutil.copytree(s/'usr/lib/firmware/xr/a081',r/'usr/lib/firmware/xr/a081',dirs_exist_ok=True,symlinks=True)
 for q in (s/'usr/lib/firmware').glob('regulatory.db*'):shutil.copy2(q,r/'usr/lib/firmware'/q.name)
 write('etc/hostname','a081-openkylin\n')
 write('etc/hosts','127.0.0.1 localhost\n127.0.1.1 a081-openkylin\n::1 localhost ip6-localhost\n')

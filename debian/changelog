@@ -1,3 +1,10 @@
+openkylin-xr-integration (0.1.13) unstable; urgency=medium
+
+  * Ship the shared iQIYI speaker profile and select each model firmware
+    in openKylin images.
+
+ -- bits <bigbits@hackx.cc>  Mon, 23 Nov 2026 14:32:39 +0800
+
 openkylin-xr-integration (0.1.12) unstable; urgency=medium
 
   * Start factory Bluetooth identity setup only when the board exposes QCA6390.
