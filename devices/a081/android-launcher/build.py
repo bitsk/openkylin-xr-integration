@@ -40,9 +40,10 @@ def main():
  <path android:fillColor="{color}" android:pathData="M0,0h96v96h-96z"/>
  <path android:fillColor="#FFFFFF" android:pathData="M47,19v9a22,22 0,1 0,21 21h-8a14,14 0,1 1,-13 -13v10l20,-15z"/>
 </vector>''')
+        version_code, version_name = (3, '1.2') if target == 'openkylin' else (2, '1.1')
         manifest = work / 'AndroidManifest.xml'
         manifest.write_text(f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android"
- package="com.bits.qiyu.boot.{target}" android:versionCode="2" android:versionName="1.1">
+ package="com.bits.qiyu.boot.{target}" android:versionCode="{version_code}" android:versionName="{version_name}">
  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="29"/>
  <application android:label="进入 {label}" android:icon="@drawable/icon"
  android:allowBackup="false" android:theme="@android:style/Theme.Material.NoActionBar">

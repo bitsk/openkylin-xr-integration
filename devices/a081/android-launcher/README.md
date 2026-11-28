@@ -1,11 +1,9 @@
 # A081 Android system launchers
 
 Three independent Android packages provide openKylin, SteamOS and Debian icons.
-Opening an icon performs a read-only installation check; reboot requires an
-explicit button and confirmation. The helper checks the locally pinned recovery
-image, installed root marker and kernel modules, then writes only the one-shot
-`boot/next-system` selector and clock seed in osstore. It does not flash partitions
-or change `default-system`. The recovery consumes that selector on its next boot.
+The openKylin package (1.2) opens a normal Android confirmation page, requests root with `su -c 'id -u'`, and on confirmation runs `su -c '/system/bin/reboot recovery'`. Install the Alpha system and recovery on the current slot first. This shortcut works with both public Alpha image revisions. Install the signed APK using `adb install -r openkylin.apk`.
+
+The SteamOS and Debian icons use the multi-root helper and one-shot osstore selector described below.
 
 Build with an Android SDK containing API 29 and build-tools 35.0.1:
 
@@ -21,11 +19,11 @@ eye panes: marking this non-SDK activity as a native VR application bypasses
 that window input path and leaves its buttons inaccessible to the controller.
 No Qiyu Home launcher action or legacy QTI category is added.
 
-On a rooted A081 Android B installation, install `control.sh` root-owned mode
+For the legacy multi-root helper on a rooted A081 Android B installation, install `control.sh` root-owned mode
 0700 at `/data/adb/qiyu-boot/control.sh`. Supply a root-owned mode 0600
 `config.sh` alongside it with `RECOVERY_SHA256` and `KERNEL_RELEASE` pinned to
 the locally verified recovery and matching modules. This private configuration
-and signing keys do not belong in Git. Grant root only to the three installed
+and signing keys do not belong in Git. Grant root only to the intended
 launcher package UIDs; do not enable global automatic root authorization.
 SteamOS displays a desktop/VR validation notice unless the local configuration
 explicitly sets `STEAMOS_VR_READY=1` after validating its VR startup separately.

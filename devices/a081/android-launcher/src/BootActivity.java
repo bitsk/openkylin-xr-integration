@@ -11,13 +11,12 @@ import android.widget.TextView;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
-import java.util.ArrayList;
 
 public final class BootActivity extends Activity {
     private String target;
     private String title;
-    private final ArrayList<TextView> statuses = new ArrayList<>();
-    private final ArrayList<Button> buttons = new ArrayList<>();
+    private TextView status;
+    private Button reboot;
     private boolean confirming;
     private boolean ready;
 
@@ -51,20 +50,20 @@ public final class BootActivity extends Activity {
         heading.setGravity(Gravity.CENTER);
         pane.addView(heading);
         TextView explanation = new TextView(this);
-        explanation.setText("重启后本次进入 " + title + "。\n默认启动系统保持原设置。");
+        explanation.setText(target.equals("openkylin")
+            ? "请先安装 openKylin Alpha。确认后将重启到当前槽位的 recovery。"
+            : "重启后本次进入 " + title + "。\n默认启动系统保持原设置。");
         explanation.setTextColor(0xffcedaeb);
         explanation.setTextSize(18);
         explanation.setGravity(Gravity.CENTER);
         explanation.setPadding(0, 20, 0, 20);
         pane.addView(explanation);
-        TextView status = new TextView(this);
-        statuses.add(status);
+        status = new TextView(this);
         status.setGravity(Gravity.CENTER);
         status.setTextColor(0xffcedaeb);
         status.setTextSize(18);
         pane.addView(status);
-        Button reboot = new Button(this);
-        buttons.add(reboot);
+        reboot = new Button(this);
         reboot.setAllCaps(false);
         reboot.setText("重启进入 " + title);
         reboot.setTextSize(22);
@@ -74,8 +73,8 @@ public final class BootActivity extends Activity {
             if (!ready) return;
             if (!confirming) {
                 confirming = true;
-                for (TextView text : statuses) text.setText("确认重启？当前 Android 应用将关闭。");
-                for (Button button : buttons) button.setText("确认重启进入 " + title);
+                status.setText("确认重启？当前 Android 应用将关闭。");
+                reboot.setText("确认重启进入 " + title);
             } else run("reboot");
         });
         Button close = new Button(this);
@@ -88,15 +87,24 @@ public final class BootActivity extends Activity {
 
     private void run(String action) {
         ready = false;
-        for (Button button : buttons) button.setEnabled(false);
-        for (TextView text : statuses) text.setText(action.equals("preflight") ? "正在检查安装…" : "正在准备重启…");
+        reboot.setEnabled(false);
+        boolean alpha = target.equals("openkylin");
+        boolean checking = action.equals("preflight");
+        status.setText(checking
+            ? (alpha ? "正在请求 root 授权…" : "正在检查安装…") : "正在准备重启…");
         new Thread(() -> {
             String output;
             boolean ok = false;
             try {
-                Process process = new ProcessBuilder("su", "-mm", "-c",
-                    "sh /data/adb/qiyu-boot/control.sh " + action + " " + target)
-                    .redirectErrorStream(true).start();
+                ProcessBuilder request;
+                if (alpha) {
+                    request = new ProcessBuilder("su", "-c",
+                        checking ? "id -u" : "/system/bin/reboot recovery");
+                } else {
+                    request = new ProcessBuilder("su", "-mm", "-c",
+                        "sh /data/adb/qiyu-boot/control.sh " + action + " " + target);
+                }
+                Process process = request.redirectErrorStream(true).start();
                 if (!process.waitFor(45, TimeUnit.SECONDS)) {
                     process.destroyForcibly();
                     throw new Exception("root 请求超时，请检查授权后重新打开");
@@ -108,16 +116,19 @@ public final class BootActivity extends Activity {
                     while ((count = stream.read(block)) != -1) buffer.write(block, 0, count);
                 }
                 output = buffer.toString("UTF-8").trim();
-                ok = process.exitValue() == 0 && output.contains("READY " + target);
+                ok = checking && process.exitValue() == 0
+                    && (alpha ? output.equals("0") : output.contains("READY " + target));
                 Log.i("QiyuBoot", action + " " + target + " exit=" + process.exitValue() + " " + output);
                 if (ok) {
                     int notice = output.indexOf("NOTICE ");
-                    output = "已就绪，可重启进入 " + title
+                    output = (alpha ? "已获 root 授权。" : "已就绪，可重启进入 " + title)
                         + (notice >= 0 ? "\n" + output.substring(notice + 7) : "");
                 }
+                else if (!checking && process.exitValue() == 0) output = "已请求重启。";
+                else if (alpha && checking) output = "未获 root 授权。请在 Magisk 授权后重新打开。";
                 else if (output.isEmpty()) output = "检查未通过，请确认 root 授权和系统安装";
             } catch (Exception error) {
-                output = error.getMessage();
+                output = alpha && checking ? "无法取得 root 权限。请检查 Magisk 授权后重新打开。" : error.getMessage();
                 Log.e("QiyuBoot", "Boot request failed", error);
             }
             final String text = output;
@@ -125,8 +136,8 @@ public final class BootActivity extends Activity {
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 ready = enabled;
-                for (TextView view : statuses) view.setText(text);
-                for (Button button : buttons) button.setEnabled(enabled);
+                status.setText(text);
+                reboot.setEnabled(enabled);
             });
         }, "boot-preflight").start();
     }
