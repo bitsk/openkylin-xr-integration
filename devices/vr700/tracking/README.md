@@ -56,9 +56,8 @@ Additional private inputs and installed paths:
 
 The capsule needs `controller-sdk-pose`, `liba081-sdk-log.so`, and
 `controller-dsp/{libcdsprpc.so,libcdsprpc_system.so,liba081-snpe-runtime.so}` from
-`/usr/lib/aarch64-linux-gnu/xr/controller`. It also needs
-`tracking/hexagonrpcd-a081` from `/usr/bin/xr-hexagonrpcd`. These retained filenames
-are ABI names, not permission to import old MIX binaries. Head producer and plugin
+`/usr/lib/aarch64-linux-gnu/xr/controller`. The session starts
+`/usr/bin/xr-hexagonrpcd` directly from the installed daemon package. Head producer and plugin
 paths come from `/usr/lib/aarch64-linux-gnu/xr/head-tracking`.
 
 Start only after dependencies and actual resources are present:

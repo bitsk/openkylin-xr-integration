@@ -15,7 +15,6 @@ test -x /usr/bin/xr-controller-uart
 test -f /usr/lib/aarch64-linux-gnu/xr/monado/bin/linuxarm64/driver_monado.so
 test -x /usr/lib/aarch64-linux-gnu/xr/monado/pose-watch
 install -d -m 755 "$capsule/tracking"
-install -m 755 /usr/bin/xr-hexagonrpcd "$capsule/tracking/hexagonrpcd-a081"
 install -m 755 /usr/lib/aarch64-linux-gnu/xr/monado/pose-watch "$capsule/pose-watch"
-sha256sum "$capsule/pose-watch" "$lib/controller-sdk-pose" "$lib/"*.so "$capsule/tracking/hexagonrpcd-a081" > "$capsule/installed-component-sha256.txt"
+sha256sum "$capsule/pose-watch" "$lib/controller-sdk-pose" "$lib/"*.so /usr/bin/xr-hexagonrpcd > "$capsule/installed-component-sha256.txt"
 echo 'Capsule completed from installed components; no services started.'
